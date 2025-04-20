@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512px" height="512px" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>icon_talk</title>
+    <g id="icon_talk" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <circle id="背景" fill="#3F51B5" cx="256" cy="256" r="224"></circle>
+        <path d="M358,130 C379.539105,130 397,147.460895 397,169 L397,169 L397,255 C397,276.539105 379.539105,294 358,294 L358,294 L254,294 L210,344 L210,294 L154,294 C132.460895,294 115,276.539105 115,255 L115,255 L115,169 C115,147.460895 132.460895,130 154,130 L154,130 Z" id="吹き出し" fill="#FFFFFF"></path>
+        <circle id="丸1" fill="#3F51B5" cx="160" cy="214" r="20"></circle>
+        <circle id="丸2" fill="#3F51B5" cx="256" cy="214" r="20"></circle>
+        <circle id="丸3" fill="#3F51B5" cx="352" cy="214" r="20"></circle>
+    </g>
+</svg> 

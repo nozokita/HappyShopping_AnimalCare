@@ -1350,4 +1350,69 @@ class GameViewModel: ObservableObject {
         // 子犬が去ったかどうかをチェック
         checkPuppyMissing()
     }
+
+    // MARK: - 子犬の会話機能
+
+    // 子犬の会話リスト
+    private var puppyConversations: [[String: String]] = [
+        ["normal": "こんにちは！今日も元気だよ！"],
+        ["normal": "お散歩に行きたいな～"],
+        ["normal": "遊んでくれてありがとう！"],
+        ["normal": "君のことが大好きだよ！"],
+        ["normal": "今日はいい天気だね！"],
+        ["happy": "わーい！すごく楽しいよ！"],
+        ["happy": "もっと一緒に遊ぼうよ！"],
+        ["happy": "幸せだなぁ～！"],
+        ["happy": "大好き大好き！"],
+        ["hungry": "お腹すいたよ～..."],
+        ["hungry": "ごはんの時間じゃない？"],
+        ["hungry": "何か食べたいな..."],
+        ["sad": "ちょっと元気がないよ..."],
+        ["sad": "遊んでくれないの...？"],
+        ["sad": "寂しいよ..."]
+    ]
+
+    // 現在の状態に合わせた会話を取得
+    func getPuppyConversation() -> String {
+        var category = "normal"
+        
+        // 機嫌やお腹の状態によって会話カテゴリを変更
+        if puppyHappiness < 30 || poopCount >= 3 {
+            category = "sad"
+        } else if puppyHunger < 30 {
+            category = "hungry"
+        } else if puppyHappiness > 80 {
+            category = "happy"
+        }
+        
+        // 該当カテゴリの会話をフィルタリング
+        let filteredConversations = puppyConversations.filter { $0[category] != nil }.compactMap { $0[category] }
+        
+        // ランダムに選択
+        guard let selectedConversation = filteredConversations.randomElement() else {
+            return "こんにちは！" // デフォルトの挨拶
+        }
+        
+        return selectedConversation
+    }
+
+    // 子犬とのコミュニケーションを記録する
+    @Published var lastConversationTime: Date = Date()
+    @Published var showConversationBubble: Bool = false
+    @Published var currentConversation: String = ""
+
+    // 会話を更新する
+    func updatePuppyConversation() {
+        currentConversation = getPuppyConversation()
+        lastConversationTime = Date()
+        showConversationBubble = true
+        
+        // 操作時間も更新
+        updateLastInteraction()
+    }
+
+    // 会話バブルを非表示にする
+    func hideConversationBubble() {
+        showConversationBubble = false
+    }
 } 

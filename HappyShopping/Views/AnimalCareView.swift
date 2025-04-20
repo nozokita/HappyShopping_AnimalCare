@@ -315,6 +315,16 @@ struct AnimalCareView: View {
                                 color: Color(hex: 0x2196F3),
                                 isDisabled: viewModel.poopCount == 0
                             )
+                            
+                            // 会話ボタン（他のボタンと同じスタイル）
+                            ActionButtonSF(
+                                action: { conversationAction() },
+                                systemName: "bubble.left.fill",
+                                color: Color(hex: 0x3F51B5),
+                                isDisabled: viewModel.showConversationBubble,
+                                iconSize: 16,
+                                circleSize: 40
+                            )
                         }
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)
@@ -438,6 +448,18 @@ struct AnimalCareView: View {
             viewModel.cleanPoops()
             viewModel.showCleaningAnimation = true
             statusMessage = "お掃除しました！"
+            showStatusMessage = true
+            
+            // 操作時間を更新
+            viewModel.updateLastInteraction()
+        }
+    }
+    
+    // 会話アクション
+    private func conversationAction() {
+        if !viewModel.showConversationBubble {
+            viewModel.updatePuppyConversation()
+            statusMessage = "話しかけました！"
             showStatusMessage = true
             
             // 操作時間を更新
@@ -618,5 +640,37 @@ struct PuppyNameInputView: View {
                 newPuppyName = viewModel.puppyName
             }
         }
+    }
+}
+
+// SFSymbols用のアクションボタンコンポーネント
+struct ActionButtonSF: View {
+    var action: () -> Void
+    var systemName: String
+    var color: Color
+    var isDisabled: Bool
+    var iconSize: CGFloat = 20  // デフォルトサイズを設定
+    var circleSize: CGFloat = 50  // 背景円のサイズ
+    
+    var body: some View {
+        Button(action: action) {
+            ZStack {
+                Circle()
+                    .fill(color)
+                    .frame(width: circleSize, height: circleSize)
+                
+                Image(systemName: systemName)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: iconSize, height: iconSize)
+                    .foregroundColor(.white)
+            }
+            .opacity(isDisabled ? 0.5 : 1.0)
+            .shadow(color: Color.black.opacity(0.2), radius: 4, x: 0, y: 2)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .disabled(isDisabled)
+        .scaleEffect(isDisabled ? 0.9 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isDisabled)
     }
 } 

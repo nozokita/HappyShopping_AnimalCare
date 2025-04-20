@@ -31,6 +31,10 @@ struct PuppyAnimationView: View {
     @State private var lastPoopCount: Int = 0
     @State private var showCleaning: Bool = false
     
+    // 会話バブル関連
+    @State private var conversationAnimating: Bool = false
+    @State private var conversationOpacity: Double = 0
+    
     // 親ビューから渡されるサイズ
     var size: CGSize
     
@@ -77,11 +81,68 @@ struct PuppyAnimationView: View {
                 .position(position)
                 .scaleEffect(shouldBounce ? 1.1 : 1.0)
                 .animation(.spring(response: 0.3, dampingFraction: 0.5), value: shouldBounce)
+            
+            // 会話バブル
+            if viewModel.showConversationBubble {
+                VStack(spacing: 0) {
+                    // 吹き出し
+                    Text(viewModel.currentConversation)
+                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                        .foregroundColor(Color(hex: 0x4E342E))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.white)
+                                .shadow(color: Color.black.opacity(0.2), radius: 4, x: 0, y: 2)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color(hex: 0xE0E0E0), lineWidth: 1)
+                        )
+                    
+                    // 吹き出しの三角形
+                    Triangle()
+                        .fill(Color.white)
+                        .frame(width: 16, height: 8)
+                        .shadow(color: Color.black.opacity(0.1), radius: 1, x: 0, y: 1)
+                }
+                .position(CGPoint(x: position.x, y: position.y - 70))
+                .opacity(conversationOpacity)
+                .onAppear {
+                    // 会話バブルのアニメーション
+                    conversationAnimating = true
+                    withAnimation(.easeIn(duration: 0.3)) {
+                        conversationOpacity = 1
+                    }
+                    
+                    // 5秒後に会話を非表示
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                        withAnimation(.easeOut(duration: 0.3)) {
+                            if conversationAnimating {
+                                conversationOpacity = 0
+                                conversationAnimating = false
+                                
+                                // ビューモデルのフラグも更新
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                    viewModel.hideConversationBubble()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
         .frame(width: size.width, height: size.height)
         .contentShape(Rectangle())
         .onTapGesture {
             petPuppy()
+        }
+        .onLongPressGesture(minimumDuration: 0.5) {
+            // 長押しで会話を表示
+            if !viewModel.showConversationBubble && currentState != .eating && currentState != .playing {
+                viewModel.updatePuppyConversation()
+            }
         }
         .onAppear {
             startAnimation()
@@ -118,6 +179,13 @@ struct PuppyAnimationView: View {
             // うんちの数が変わったら状態も再計算
             if count >= 3 && (currentState != .eating && currentState != .playing && currentState != .petting) {
                 currentState = determineState()
+            }
+        }
+        .onChange(of: viewModel.showConversationBubble) { _, isShowing in
+            if !isShowing {
+                // 会話バブルが非表示になったらアニメーション状態をリセット
+                conversationAnimating = false
+                conversationOpacity = 0
             }
         }
     }
