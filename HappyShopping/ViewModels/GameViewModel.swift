@@ -1372,6 +1372,56 @@ class GameViewModel: ObservableObject {
         ["sad": "寂しいよ..."]
     ]
 
+    // ユーザーの選択可能な会話選択肢とそれに対する子犬の返答
+    struct ConversationChoice {
+        let userPrompt: String
+        let puppyResponses: [String]  // 複数の返答からランダムに選択
+    }
+
+    // 会話選択肢リスト
+    private var conversationChoices: [ConversationChoice] = [
+        ConversationChoice(
+            userPrompt: "今日はどう？",
+            puppyResponses: [
+                "とっても元気だよ！今日は何して遊ぶ？",
+                "うーん、ちょっと眠いかも…でも一緒にいれて嬉しいよ！",
+                "お腹がすいてたけど、会えて元気になったよ！"
+            ]
+        ),
+        ConversationChoice(
+            userPrompt: "お散歩に行く？",
+            puppyResponses: [
+                "わーい！お散歩大好き！早く行こう！",
+                "うん！どこに連れて行ってくれるの？",
+                "今日はいいお天気だね！お散歩日和だよ！"
+            ]
+        ),
+        ConversationChoice(
+            userPrompt: "好きな食べ物は？",
+            puppyResponses: [
+                "お肉が大好き！特にチキンがおいしいよ！",
+                "ドッグフードも美味しいけど、たまにおやつがほしいな…",
+                "君がくれるものはなんでも大好き！"
+            ]
+        ),
+        ConversationChoice(
+            userPrompt: "一緒に寝よう",
+            puppyResponses: [
+                "やった！ベッドで一緒に寝るの大好き！",
+                "うん、もうちょっと遊んでから眠ろうね",
+                "わーい！ぬくぬくして幸せだよ〜"
+            ]
+        ),
+        ConversationChoice(
+            userPrompt: "いい子だね",
+            puppyResponses: [
+                "えへへ、褒められて嬉しいな！",
+                "もっと褒めて欲しいな！",
+                "いつもかまってくれてありがとう！"
+            ]
+        )
+    ]
+
     // 現在の状態に合わせた会話を取得
     func getPuppyConversation() -> String {
         var category = "normal"
@@ -1401,6 +1451,10 @@ class GameViewModel: ObservableObject {
     @Published var showConversationBubble: Bool = false
     @Published var currentConversation: String = ""
 
+    // 会話選択肢表示用フラグ
+    @Published var showConversationChoices: Bool = false
+    @Published var conversationChoicesArray: [ConversationChoice] = []
+
     // 会話を更新する
     func updatePuppyConversation() {
         currentConversation = getPuppyConversation()
@@ -1414,5 +1468,29 @@ class GameViewModel: ObservableObject {
     // 会話バブルを非表示にする
     func hideConversationBubble() {
         showConversationBubble = false
+    }
+
+    // 会話選択肢を表示する
+    func showConversationOptions() {
+        // 選択肢をランダムに2つ選ぶ
+        let shuffledChoices = conversationChoices.shuffled()
+        conversationChoicesArray = Array(shuffledChoices.prefix(2))
+        showConversationChoices = true
+        
+        // 操作時間も更新
+        updateLastInteraction()
+    }
+
+    // 選択された会話に対する返答を表示
+    func respondToUserChoice(choice: ConversationChoice) {
+        // 選択肢からランダムに返答を選ぶ
+        if let response = choice.puppyResponses.randomElement() {
+            currentConversation = response
+            showConversationBubble = true
+            showConversationChoices = false
+        }
+        
+        // 操作時間も更新
+        updateLastInteraction()
     }
 } 

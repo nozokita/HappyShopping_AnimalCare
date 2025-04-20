@@ -323,7 +323,8 @@ struct AnimalCareView: View {
                                 color: Color(hex: 0x3F51B5),
                                 isDisabled: viewModel.showConversationBubble,
                                 iconSize: 16,
-                                circleSize: 40
+                                circleSize: 40,
+                                longPressAction: { showConversationChoices() }
                             )
                         }
                         .padding(.horizontal, 14)
@@ -375,6 +376,9 @@ struct AnimalCareView: View {
         }
         .sheet(isPresented: $showNameInputDialog) {
             PuppyNameInputView(viewModel: viewModel, isPresented: $showNameInputDialog)
+        }
+        .sheet(isPresented: $viewModel.showConversationChoices) {
+            ConversationChoiceView(viewModel: viewModel)
         }
     }
     
@@ -458,6 +462,7 @@ struct AnimalCareView: View {
     // 会話アクション
     private func conversationAction() {
         if !viewModel.showConversationBubble {
+            // 通常タップは自動会話を表示
             viewModel.updatePuppyConversation()
             statusMessage = "話しかけました！"
             showStatusMessage = true
@@ -465,6 +470,13 @@ struct AnimalCareView: View {
             // 操作時間を更新
             viewModel.updateLastInteraction()
         }
+    }
+
+    // 会話選択肢の表示（長押し時）
+    private func showConversationChoices() {
+        viewModel.showConversationOptions()
+        statusMessage = "会話を選んでいます..."
+        showStatusMessage = true
     }
 }
 
@@ -651,6 +663,7 @@ struct ActionButtonSF: View {
     var isDisabled: Bool
     var iconSize: CGFloat = 20  // デフォルトサイズを設定
     var circleSize: CGFloat = 50  // 背景円のサイズ
+    var longPressAction: (() -> Void)? = nil  // 長押し時のアクション
     
     var body: some View {
         Button(action: action) {
@@ -672,5 +685,14 @@ struct ActionButtonSF: View {
         .disabled(isDisabled)
         .scaleEffect(isDisabled ? 0.9 : 1.0)
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isDisabled)
+        .simultaneousGesture(
+            longPressAction == nil ? nil :
+                LongPressGesture(minimumDuration: 0.8)
+                    .onEnded { _ in
+                        if !isDisabled {
+                            longPressAction?()
+                        }
+                    }
+        )
     }
 } 
