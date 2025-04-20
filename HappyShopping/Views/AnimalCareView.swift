@@ -6,6 +6,7 @@ struct AnimalCareView: View {
     @State private var statusMessage: String = ""
     @State private var showMiniGame: Bool = false
     @State private var showNameInputDialog: Bool = false
+    @State private var showOwnerNameInputDialog: Bool = false
     @State private var animationTimer: Timer? = nil
     
     // 画面サイズ取得用
@@ -398,6 +399,14 @@ struct AnimalCareView: View {
                         showStatusMessage = false
                     }
                 }
+                
+                // 飼い主名が未設定なら、名前入力ダイアログを表示
+                if viewModel.ownerName.isEmpty {
+                    // 少し遅延させて画面が完全に表示された後に表示
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        showOwnerNameInputDialog = true
+                    }
+                }
             }
             .onDisappear {
                 // 画面を離れる時にタイマーを停止
@@ -410,6 +419,9 @@ struct AnimalCareView: View {
         }
         .sheet(isPresented: $showNameInputDialog) {
             PuppyNameInputView(viewModel: viewModel, isPresented: $showNameInputDialog)
+        }
+        .sheet(isPresented: $showOwnerNameInputDialog) {
+            OwnerNameInputView(viewModel: viewModel, isPresented: $showOwnerNameInputDialog)
         }
     }
     
@@ -733,5 +745,107 @@ struct ActionButtonSF: View {
         .disabled(isDisabled)
         .scaleEffect(isDisabled ? 0.9 : 1.0)
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isDisabled)
+    }
+}
+
+// 飼い主の名前入力ビュー
+struct OwnerNameInputView: View {
+    @ObservedObject var viewModel: GameViewModel
+    @Binding var isPresented: Bool
+    @State private var newOwnerName: String = ""
+    @State private var showError: Bool = false
+    @FocusState private var isTextFieldFocused: Bool
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            // ヘッダー
+            Text("あなたの名前を入力してください")
+                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .foregroundColor(Color(hex: 0x5D4037))
+                .padding(.top, 20)
+                .multilineTextAlignment(.center)
+            
+            // 子犬画像を追加
+            Image("puppy")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 120)
+                .padding(.vertical, 10)
+            
+            Text("子犬があなたの名前を呼んでくれるようになります！")
+                .font(.system(size: 16, design: .rounded))
+                .foregroundColor(Color(hex: 0x8D6E63))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+            
+            // 入力フィールド
+            TextField("名前を入力", text: $newOwnerName)
+                .font(.system(size: 18))
+                .padding()
+                .background(Color.white)
+                .cornerRadius(10)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color(hex: 0xBDBDBD), lineWidth: 1)
+                )
+                .padding(.horizontal, 20)
+                .focused($isTextFieldFocused)
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        isTextFieldFocused = true
+                    }
+                }
+            
+            // エラーメッセージ
+            if showError {
+                Text("名前を入力してください")
+                    .font(.caption)
+                    .foregroundColor(.red)
+            }
+            
+            // ボタンエリア
+            HStack(spacing: 15) {
+                // スキップボタン
+                Button(action: {
+                    isPresented = false
+                }) {
+                    Text("スキップ")
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .foregroundColor(Color(hex: 0x9E9E9E))
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 20)
+                        .background(Color(hex: 0xEEEEEE))
+                        .cornerRadius(25)
+                }
+                
+                // 保存ボタン
+                Button(action: {
+                    if newOwnerName.trimmingCharacters(in: .whitespaces).isEmpty {
+                        showError = true
+                    } else {
+                        viewModel.saveOwnerName(newOwnerName.trimmingCharacters(in: .whitespaces))
+                        isPresented = false
+                    }
+                }) {
+                    Text("保存")
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 25)
+                        .background(Color(hex: 0x8D6E63))
+                        .cornerRadius(25)
+                }
+                .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 2)
+            }
+            .padding(.top, 10)
+            .padding(.bottom, 30)
+        }
+        .frame(maxWidth: 350)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.white)
+        )
+        .shadow(color: Color.black.opacity(0.3), radius: 20, x: 0, y: 10)
+        .padding(.horizontal, 20)
     }
 } 

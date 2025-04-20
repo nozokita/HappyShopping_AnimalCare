@@ -1160,6 +1160,7 @@ class GameViewModel: ObservableObject {
     @Published var puppyAdoptionDate: Date = Date()
     @Published var isPuppyMissing: Bool = false
     @Published var lastInteractionDate: Date = Date()
+    @Published var ownerName: String = "" // ユーザー（飼い主）の名前
     private let missingTimeThreshold: TimeInterval = 60 * 60 * 24 * 3 // 3日間
 
     // 時間帯関連の状態管理
@@ -1259,6 +1260,20 @@ class GameViewModel: ObservableObject {
         }
     }
     
+    /// 飼い主（ユーザー）の名前を保存する
+    func saveOwnerName(_ name: String) {
+        ownerName = name
+        UserDefaults.standard.set(name, forKey: "ownerName")
+        updateLastInteraction()
+    }
+    
+    /// 飼い主（ユーザー）の名前を読み込む
+    func loadOwnerName() {
+        if let savedName = UserDefaults.standard.string(forKey: "ownerName") {
+            ownerName = savedName
+        }
+    }
+
     /// 飼育開始日を保存する
     func savePuppyAdoptionDate(_ date: Date) {
         puppyAdoptionDate = date
@@ -1346,6 +1361,7 @@ class GameViewModel: ObservableObject {
         loadPuppyName()
         loadPuppyAdoptionDate()
         loadLastInteractionDate()
+        loadOwnerName() // 飼い主の名前も読み込む
         
         // 子犬が去ったかどうかをチェック
         checkPuppyMissing()
@@ -1371,6 +1387,36 @@ class GameViewModel: ObservableObject {
         ["sad": "遊んでくれないの...？"],
         ["sad": "寂しいよ..."]
     ]
+
+    // 子犬の朝のあいさつリスト（名前あり）
+    private var puppyMorningGreetings: [String] = [
+        "{name}ちゃん、おはよう！今日も元気だよ！",
+        "おはよう、{name}ちゃん！今日も一緒に遊ぼうね！",
+        "{name}ちゃん、おはよう！今日はどこに行く？",
+        "おはよう！{name}ちゃんに会えてうれしいな！"
+    ]
+    
+    // 子犬の夜のあいさつリスト（名前あり）
+    private var puppyEveningGreetings: [String] = [
+        "{name}ちゃん、こんばんは！今日も楽しかったね！",
+        "こんばんは、{name}ちゃん！もう寝る時間かな？",
+        "{name}ちゃん、今日も一緒にいてくれてありがとう！",
+        "こんばんは！{name}ちゃんといると安心するよ〜"
+    ]
+    
+    // 名前を入れた挨拶メッセージを取得
+    func getPersonalizedGreeting() -> String {
+        let greetings = isDaytime ? puppyMorningGreetings : puppyEveningGreetings
+        let randomGreeting = greetings.randomElement() ?? "{name}ちゃん、こんにちは！"
+        
+        if ownerName.isEmpty {
+            return randomGreeting.replacingOccurrences(of: "{name}ちゃん、", with: "")
+                                .replacingOccurrences(of: "{name}ちゃん", with: "")
+                                .replacingOccurrences(of: "、{name}ちゃん", with: "")
+        } else {
+            return randomGreeting.replacingOccurrences(of: "{name}", with: ownerName)
+        }
+    }
 
     // ユーザーの選択可能な会話選択肢とそれに対する子犬の返答
     struct ConversationChoice {
@@ -1450,50 +1496,47 @@ class GameViewModel: ObservableObject {
     @Published var lastConversationTime: Date = Date()
     @Published var showConversationBubble: Bool = false
     @Published var currentConversation: String = ""
-
-    // 会話選択肢表示用フラグ
-    @Published var showConversationChoices: Bool = false
-    @Published var conversationChoicesArray: [ConversationChoice] = []
-
-    // インライン会話選択肢用フラグ - シートではなく直接表示
     @Published var showInlineConversationChoices: Bool = false
-
-    // 会話を更新する
+    @Published var conversationChoicesArray: [ConversationChoice] = []
+    
+    /// 子犬の会話を更新する
     func updatePuppyConversation() {
-        currentConversation = getPuppyConversation()
-        lastConversationTime = Date()
-        showConversationBubble = true
+        // 5%の確率で名前入りの挨拶をする
+        if Int.random(in: 1...100) <= 5 && !ownerName.isEmpty {
+            currentConversation = getPersonalizedGreeting()
+        } else {
+            currentConversation = getPuppyConversation()
+        }
         
-        // 操作時間も更新
+        showConversationBubble = true
+        lastConversationTime = Date()
+        
+        // 操作時間を更新
         updateLastInteraction()
     }
-
-    // 会話バブルを非表示にする
+    
+    /// 会話バブルを非表示にする
     func hideConversationBubble() {
         showConversationBubble = false
     }
-
-    // 会話選択肢を表示する
-    func showConversationOptions() {
-        // 選択肢をランダムに2つ選ぶ
-        let shuffledChoices = conversationChoices.shuffled()
-        conversationChoicesArray = Array(shuffledChoices.prefix(2))
-        showConversationChoices = true
-        
-        // 操作時間も更新
-        updateLastInteraction()
-    }
-
-    // 選択された会話に対する返答を表示
+    
+    /// ユーザーの選択した会話に応答する
     func respondToUserChoice(choice: ConversationChoice) {
-        // 選択肢からランダムに返答を選ぶ
-        if let response = choice.puppyResponses.randomElement() {
+        guard let response = choice.puppyResponses.randomElement() else { return }
+        
+        // 名前が設定されている場合は20%の確率で名前を呼ぶ
+        if !ownerName.isEmpty && Int.random(in: 1...100) <= 20 {
+            // 応答の先頭に名前を追加
+            currentConversation = "\(ownerName)ちゃん、\(response)"
+        } else {
             currentConversation = response
-            showConversationBubble = true
-            showConversationChoices = false
         }
         
-        // 操作時間も更新
+        showConversationBubble = true
+        showInlineConversationChoices = false
+        lastConversationTime = Date()
+        
+        // 操作時間を更新
         updateLastInteraction()
     }
 } 
