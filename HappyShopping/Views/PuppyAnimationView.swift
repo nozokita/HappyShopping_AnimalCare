@@ -14,6 +14,84 @@ enum PuppyState {
     case petting    // 撫でられている
 }
 
+// MARK: - SubViews
+
+// うんち表示用サブビュー
+struct PoopView: View {
+    let position: CGPoint
+    let showCleaning: Bool
+    
+    var body: some View {
+        Image("poop")
+            .resizable()
+            .scaledToFit()
+            .frame(width: 40)
+            .position(position)
+            .opacity(showCleaning ? 0 : 1)
+            .animation(.easeOut(duration: 0.5), value: showCleaning)
+    }
+}
+
+// 掃除エフェクト用サブビュー
+struct CleaningEffectView: View {
+    let position: CGPoint
+    
+    var body: some View {
+        Text("✨")
+            .font(.system(size: 30))
+            .position(position)
+    }
+}
+
+// 食べ物表示用サブビュー
+struct FoodView: View {
+    let position: CGPoint
+    
+    var body: some View {
+        Image("food")
+            .resizable()
+            .scaledToFit()
+            .frame(width: 60)
+            .position(position)
+    }
+}
+
+// 会話バブル用サブビュー
+struct ConversationBubbleView: View {
+    let text: String
+    let position: CGPoint
+    let opacity: Double
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            // 吹き出し
+            Text(text)
+                .font(.system(size: 14, weight: .medium, design: .rounded))
+                .foregroundColor(Color(hex: 0x4E342E))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.white)
+                        .shadow(color: Color.black.opacity(0.2), radius: 4, x: 0, y: 2)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color(hex: 0xE0E0E0), lineWidth: 1)
+                )
+            
+            // 吹き出しの三角形
+            Triangle()
+                .fill(Color.white)
+                .frame(width: 16, height: 8)
+                .shadow(color: Color.black.opacity(0.1), radius: 1, x: 0, y: 1)
+        }
+        .position(position)
+        .opacity(opacity)
+    }
+}
+
+// MARK: - Main View
 struct PuppyAnimationView: View {
     @ObservedObject var viewModel: GameViewModel
     @State private var currentState: PuppyState = .idle
@@ -38,77 +116,139 @@ struct PuppyAnimationView: View {
     // 親ビューから渡されるサイズ
     var size: CGSize
     
+    // カスタム画像名を保持するプロパティ
+    @State private var _customImageName: String? = nil
+    
     var body: some View {
+        mainContentView
+            .frame(width: size.width, height: size.height)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                petPuppy()
+            }
+            .onLongPressGesture(minimumDuration: 0.5) {
+                // 長押しで会話を表示
+                if !viewModel.showConversationBubble && currentState != .eating && currentState != .playing {
+                    // ランダムな会話を表示
+                    let randomGreeting = viewModel.getPersonalizedGreeting()
+                    viewModel.currentConversation = randomGreeting
+                    viewModel.showConversationBubble = true
+                    viewModel.lastConversationTime = Date()
+                    
+                    // 操作時間を更新
+                    viewModel.updateLastInteraction()
+                }
+            }
+            .onAppear {
+                startAnimation()
+                // 初期うんち生成
+                updatePoopDisplay()
+            }
+            .onDisappear {
+                timerCancellable?.cancel()
+            }
+            .onChange(of: viewModel.showEatingAnimation) { _, isEating in
+                if isEating {
+                    showEatingAnimation()
+                }
+            }
+            .onChange(of: viewModel.showPlayingAnimation) { _, isPlaying in
+                if isPlaying {
+                    showPlayingAnimation()
+                }
+            }
+            .onChange(of: viewModel.showPettingAnimation) { _, isPetting in
+                if isPetting {
+                    showPettingAnimation()
+                }
+            }
+            .onChange(of: viewModel.showCleaningAnimation) { _, isCleaning in
+                if isCleaning {
+                    showCleaningAnimation()
+                }
+            }
+            .onChange(of: viewModel.poopCount) { _, count in
+                // うんちの数が変化したら表示を更新
+                updatePoopDisplay()
+                
+                // うんちの数が変わったら状態も再計算
+                if count >= 3 && (currentState != .eating && currentState != .playing && currentState != .petting) {
+                    currentState = determineState()
+                }
+            }
+            .onChange(of: viewModel.showConversationBubble) { _, isShowing in
+                if !isShowing {
+                    // 会話バブルが非表示になったらアニメーション状態をリセット
+                    conversationAnimating = false
+                    conversationOpacity = 0
+                }
+            }
+    }
+    
+    // メインコンテンツビュー
+    private var mainContentView: some View {
         ZStack {
             // うんち画像（ある場合に表示）
-            ForEach(0..<poopPositions.count, id: \.self) { index in
-                if index < poopPositions.count {
-                    Image("poop")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 40)
-                        .position(poopPositions[index])
-                        .opacity(showCleaning ? 0 : 1) // 掃除中は非表示
-                        .animation(.easeOut(duration: 0.5), value: showCleaning)
-                }
-            }
+            poopsView
             
             // 掃除効果（キラキラエフェクト）
-            if showCleaning {
-                ForEach(0..<poopPositions.count, id: \.self) { index in
-                    if index < poopPositions.count {
-                        Text("✨")
-                            .font(.system(size: 30))
-                            .position(poopPositions[index])
-                    }
-                }
-            }
+            cleaningEffectsView
             
             // 食べ物画像（条件付きで表示）
             if showFood {
-                Image("food")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 60)
-                    .position(foodPosition)
+                FoodView(position: foodPosition)
             }
             
             // 子犬画像
-            Image(currentImageName)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 120)
-                .position(position)
-                .scaleEffect(shouldBounce ? 1.1 : 1.0)
-                .animation(.spring(response: 0.3, dampingFraction: 0.5), value: shouldBounce)
+            puppyView
             
             // 会話バブル
-            if viewModel.showConversationBubble {
-                VStack(spacing: 0) {
-                    // 吹き出し
-                    Text(viewModel.currentConversation)
-                        .font(.system(size: 14, weight: .medium, design: .rounded))
-                        .foregroundColor(Color(hex: 0x4E342E))
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.white)
-                                .shadow(color: Color.black.opacity(0.2), radius: 4, x: 0, y: 2)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color(hex: 0xE0E0E0), lineWidth: 1)
-                        )
-                    
-                    // 吹き出しの三角形
-                    Triangle()
-                        .fill(Color.white)
-                        .frame(width: 16, height: 8)
-                        .shadow(color: Color.black.opacity(0.1), radius: 1, x: 0, y: 1)
+            conversationBubbleView
+        }
+    }
+    
+    // うんち表示ビュー
+    private var poopsView: some View {
+        ForEach(0..<poopPositions.count, id: \.self) { index in
+            if index < poopPositions.count {
+                PoopView(position: poopPositions[index], showCleaning: showCleaning)
+            }
+        }
+    }
+    
+    // 掃除エフェクトビュー
+    private var cleaningEffectsView: some View {
+        Group {
+            if showCleaning {
+                ForEach(0..<poopPositions.count, id: \.self) { index in
+                    if index < poopPositions.count {
+                        CleaningEffectView(position: poopPositions[index])
+                    }
                 }
-                .position(CGPoint(x: position.x, y: position.y - 70))
-                .opacity(conversationOpacity)
+            }
+        }
+    }
+    
+    // 子犬ビュー
+    private var puppyView: some View {
+        Image(currentImageName)
+            .resizable()
+            .scaledToFit()
+            .frame(width: 120)
+            .position(position)
+            .scaleEffect(shouldBounce ? 1.1 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.5), value: shouldBounce)
+    }
+    
+    // 会話バブルビュー
+    private var conversationBubbleView: some View {
+        Group {
+            if viewModel.showConversationBubble {
+                ConversationBubbleView(
+                    text: viewModel.currentConversation,
+                    position: CGPoint(x: position.x, y: position.y - 70),
+                    opacity: conversationOpacity
+                )
                 .onAppear {
                     // 会話バブルのアニメーション
                     conversationAnimating = true
@@ -123,69 +263,14 @@ struct PuppyAnimationView: View {
                                 conversationOpacity = 0
                                 conversationAnimating = false
                                 
-                                // ビューモデルのフラグも更新
+                                // ビューモデルのフラグを更新
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                    viewModel.hideConversationBubble()
+                                    viewModel.showConversationBubble = false
                                 }
                             }
                         }
                     }
                 }
-            }
-        }
-        .frame(width: size.width, height: size.height)
-        .contentShape(Rectangle())
-        .onTapGesture {
-            petPuppy()
-        }
-        .onLongPressGesture(minimumDuration: 0.5) {
-            // 長押しで会話を表示
-            if !viewModel.showConversationBubble && currentState != .eating && currentState != .playing {
-                viewModel.updatePuppyConversation()
-            }
-        }
-        .onAppear {
-            startAnimation()
-            // 初期うんち生成
-            updatePoopDisplay()
-        }
-        .onDisappear {
-            timerCancellable?.cancel()
-        }
-        .onChange(of: viewModel.showEatingAnimation) { _, isEating in
-            if isEating {
-                showEatingAnimation()
-            }
-        }
-        .onChange(of: viewModel.showPlayingAnimation) { _, isPlaying in
-            if isPlaying {
-                showPlayingAnimation()
-            }
-        }
-        .onChange(of: viewModel.showPettingAnimation) { _, isPetting in
-            if isPetting {
-                showPettingAnimation()
-            }
-        }
-        .onChange(of: viewModel.showCleaningAnimation) { _, isCleaning in
-            if isCleaning {
-                showCleaningAnimation()
-            }
-        }
-        .onChange(of: viewModel.poopCount) { _, count in
-            // うんちの数が変化したら表示を更新
-            updatePoopDisplay()
-            
-            // うんちの数が変わったら状態も再計算
-            if count >= 3 && (currentState != .eating && currentState != .playing && currentState != .petting) {
-                currentState = determineState()
-            }
-        }
-        .onChange(of: viewModel.showConversationBubble) { _, isShowing in
-            if !isShowing {
-                // 会話バブルが非表示になったらアニメーション状態をリセット
-                conversationAnimating = false
-                conversationOpacity = 0
             }
         }
     }
@@ -224,9 +309,6 @@ struct PuppyAnimationView: View {
             _customImageName = newValue
         }
     }
-    
-    // カスタム画像名を保持するプロパティ
-    @State private var _customImageName: String? = nil
     
     // 状態決定ロジック
     private func determineState() -> PuppyState {
