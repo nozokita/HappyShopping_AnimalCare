@@ -217,11 +217,45 @@ struct AnimalCareView: View {
                             .fill(Color.black.opacity(0.1))
                             .frame(width: 220, height: 55)
                             .offset(y: geometry.size.height * 0.15)
+                            .zIndex(0)
                         
                         // 子犬のアニメーション表示
                         PuppyAnimationView(viewModel: viewModel, size: CGSize(width: geometry.size.width, height: geometry.size.height * 0.4))
                             .frame(width: geometry.size.width, height: geometry.size.height * 0.4)
                             .scaleEffect(1.15) // 子犬自体のサイズを15%拡大
+                            .zIndex(1)
+                        
+                        // インライン会話選択肢（子犬の近くに表示）
+                        if viewModel.showInlineConversationChoices {
+                            VStack(spacing: 12) {
+                                ForEach(viewModel.conversationChoicesArray, id: \.userPrompt) { choice in
+                                    Button(action: {
+                                        // 選択された会話に応答
+                                        selectConversation(choice)
+                                    }) {
+                                        Text(choice.userPrompt)
+                                            .font(.system(size: 16, weight: .medium, design: .rounded))
+                                            .foregroundColor(Color(hex: 0x5D4037))
+                                            .padding(.horizontal, 16)
+                                            .padding(.vertical, 10)
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 18)
+                                                    .fill(Color.white.opacity(0.95))
+                                                    .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 2)
+                                            )
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 18)
+                                                    .stroke(Color(hex: 0xE0E0E0), lineWidth: 1)
+                                            )
+                                    }
+                                    .transition(.scale(scale: 0.8).combined(with: .opacity))
+                                }
+                            }
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .offset(y: -40) // 子犬の上に配置
+                            .transition(.opacity)
+                            .zIndex(2)
+                        }
                         
                         // ステータスメッセージ
                         if showStatusMessage {
@@ -257,6 +291,7 @@ struct AnimalCareView: View {
                                     removal: .opacity.animation(.easeOut(duration: 0.2))
                                 )
                             )
+                            .zIndex(3)
                         }
                     }
                     .frame(height: geometry.size.height * 0.4) // 表示エリアを小さく
@@ -321,10 +356,9 @@ struct AnimalCareView: View {
                                 action: { conversationAction() },
                                 systemName: "bubble.left.fill",
                                 color: Color(hex: 0x3F51B5),
-                                isDisabled: viewModel.showConversationBubble,
+                                isDisabled: viewModel.showConversationBubble || viewModel.showInlineConversationChoices,
                                 iconSize: 16,
-                                circleSize: 40,
-                                longPressAction: { showConversationChoices() }
+                                circleSize: 40
                             )
                         }
                         .padding(.horizontal, 14)
@@ -376,9 +410,6 @@ struct AnimalCareView: View {
         }
         .sheet(isPresented: $showNameInputDialog) {
             PuppyNameInputView(viewModel: viewModel, isPresented: $showNameInputDialog)
-        }
-        .sheet(isPresented: $viewModel.showConversationChoices) {
-            ConversationChoiceView(viewModel: viewModel)
         }
     }
     
@@ -461,22 +492,40 @@ struct AnimalCareView: View {
     
     // 会話アクション
     private func conversationAction() {
-        if !viewModel.showConversationBubble {
-            // 通常タップは自動会話を表示
-            viewModel.updatePuppyConversation()
-            statusMessage = "話しかけました！"
+        if !viewModel.showConversationBubble && !viewModel.showInlineConversationChoices {
+            // 通常タップは会話選択肢を表示
+            showInlineConversationChoices()
+            statusMessage = "話しかけています..."
             showStatusMessage = true
-            
-            // 操作時間を更新
-            viewModel.updateLastInteraction()
         }
     }
 
-    // 会話選択肢の表示（長押し時）
-    private func showConversationChoices() {
-        viewModel.showConversationOptions()
-        statusMessage = "会話を選んでいます..."
-        showStatusMessage = true
+    // インライン会話選択肢の表示（タップ時）- 直接表示（新）
+    private func showInlineConversationChoices() {
+        // 選択肢を生成
+        let shuffledChoices = viewModel.conversationChoices.shuffled()
+        viewModel.conversationChoicesArray = Array(shuffledChoices.prefix(2))
+        viewModel.showInlineConversationChoices = true
+        
+        // 操作時間も更新
+        viewModel.updateLastInteraction()
+    }
+
+    // 会話選択肢を選んだときの処理
+    private func selectConversation(_ choice: GameViewModel.ConversationChoice) {
+        // 選択された会話に子犬が応答
+        if let response = choice.puppyResponses.randomElement() {
+            viewModel.currentConversation = response
+            viewModel.showConversationBubble = true
+            viewModel.showInlineConversationChoices = false
+            
+            // ステータスメッセージも表示
+            statusMessage = "「\(choice.userPrompt)」と話しかけました"
+            showStatusMessage = true
+        }
+        
+        // 操作時間を更新
+        viewModel.updateLastInteraction()
     }
 }
 
@@ -663,7 +712,6 @@ struct ActionButtonSF: View {
     var isDisabled: Bool
     var iconSize: CGFloat = 20  // デフォルトサイズを設定
     var circleSize: CGFloat = 50  // 背景円のサイズ
-    var longPressAction: (() -> Void)? = nil  // 長押し時のアクション
     
     var body: some View {
         Button(action: action) {
@@ -685,14 +733,5 @@ struct ActionButtonSF: View {
         .disabled(isDisabled)
         .scaleEffect(isDisabled ? 0.9 : 1.0)
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isDisabled)
-        .simultaneousGesture(
-            longPressAction == nil ? nil :
-                LongPressGesture(minimumDuration: 0.8)
-                    .onEnded { _ in
-                        if !isDisabled {
-                            longPressAction?()
-                        }
-                    }
-        )
     }
 } 

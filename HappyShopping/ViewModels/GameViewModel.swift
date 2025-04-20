@@ -1378,8 +1378,8 @@ class GameViewModel: ObservableObject {
         let puppyResponses: [String]  // 複数の返答からランダムに選択
     }
 
-    // 会話選択肢リスト
-    private var conversationChoices: [ConversationChoice] = [
+    // 会話選択肢リスト（公開）
+    var conversationChoices: [ConversationChoice] = [
         ConversationChoice(
             userPrompt: "今日はどう？",
             puppyResponses: [
@@ -1454,6 +1454,9 @@ class GameViewModel: ObservableObject {
     // 会話選択肢表示用フラグ
     @Published var showConversationChoices: Bool = false
     @Published var conversationChoicesArray: [ConversationChoice] = []
+
+    // インライン会話選択肢用フラグ - シートではなく直接表示
+    @Published var showInlineConversationChoices: Bool = false
 
     // 会話を更新する
     func updatePuppyConversation() {
