@@ -1388,31 +1388,61 @@ class GameViewModel: ObservableObject {
         ["sad": "寂しいよ..."]
     ]
 
-    // 子犬の朝のあいさつリスト（名前あり）
-    private var puppyMorningGreetings: [String] = [
+    // 子犬の朝のあいさつリスト（日本語）
+    private var puppyMorningGreetingsJA: [String] = [
         "{name}ちゃん、おはよう！今日も元気だよ！",
         "おはよう、{name}ちゃん！今日も一緒に遊ぼうね！",
         "{name}ちゃん、おはよう！今日はどこに行く？",
         "おはよう！{name}ちゃんに会えてうれしいな！"
     ]
     
-    // 子犬の夜のあいさつリスト（名前あり）
-    private var puppyEveningGreetings: [String] = [
+    // 子犬の夜のあいさつリスト（日本語）
+    private var puppyEveningGreetingsJA: [String] = [
         "{name}ちゃん、こんばんは！今日も楽しかったね！",
         "こんばんは、{name}ちゃん！もう寝る時間かな？",
         "{name}ちゃん、今日も一緒にいてくれてありがとう！",
         "こんばんは！{name}ちゃんといると安心するよ〜"
     ]
     
+    // 子犬の朝のあいさつリスト（英語）
+    private var puppyMorningGreetingsEN: [String] = [
+        "Good morning, {name}! I'm feeling great today!",
+        "Morning, {name}! Let's play together today!",
+        "Hi {name}, good morning! Where are we going today?",
+        "Good morning! I'm so happy to see you, {name}!"
+    ]
+    
+    // 子犬の夜のあいさつリスト（英語）
+    private var puppyEveningGreetingsEN: [String] = [
+        "Good evening, {name}! We had fun today!",
+        "Evening, {name}! Is it bedtime soon?",
+        "{name}, thank you for being with me today!",
+        "Good evening! I feel safe when I'm with you, {name}!"
+    ]
+    
     // 名前を入れた挨拶メッセージを取得
     func getPersonalizedGreeting() -> String {
-        let greetings = isDaytime ? puppyMorningGreetings : puppyEveningGreetings
-        let randomGreeting = greetings.randomElement() ?? "{name}ちゃん、こんにちは！"
+        let greetings: [String]
+        
+        if currentLanguage == "ja" {
+            greetings = isDaytime ? puppyMorningGreetingsJA : puppyEveningGreetingsJA
+        } else {
+            greetings = isDaytime ? puppyMorningGreetingsEN : puppyEveningGreetingsEN
+        }
+        
+        let randomGreeting = greetings.randomElement() ?? (currentLanguage == "ja" ? "{name}ちゃん、こんにちは！" : "Hello, {name}!")
         
         if ownerName.isEmpty {
-            return randomGreeting.replacingOccurrences(of: "{name}ちゃん、", with: "")
-                                .replacingOccurrences(of: "{name}ちゃん", with: "")
-                                .replacingOccurrences(of: "、{name}ちゃん", with: "")
+            if currentLanguage == "ja" {
+                return randomGreeting.replacingOccurrences(of: "{name}ちゃん、", with: "")
+                                    .replacingOccurrences(of: "{name}ちゃん", with: "")
+                                    .replacingOccurrences(of: "、{name}ちゃん", with: "")
+            } else {
+                return randomGreeting.replacingOccurrences(of: ", {name}", with: "")
+                                    .replacingOccurrences(of: "{name}, ", with: "")
+                                    .replacingOccurrences(of: " {name}", with: "")
+                                    .replacingOccurrences(of: "{name}", with: "")
+            }
         } else {
             return randomGreeting.replacingOccurrences(of: "{name}", with: ownerName)
         }
@@ -1538,5 +1568,48 @@ class GameViewModel: ObservableObject {
         
         // 操作時間を更新
         updateLastInteraction()
+    }
+
+    // MARK: - Localization Methods
+    
+    // 動物の部屋用のテキスト取得
+    func getLocalizedAnimalCareText(key: String) -> String {
+        let animalCareTexts: [String: [String: String]] = [
+            "room_title": ["ja": "どうぶつのおへや", "en": "Animal Room"],
+            "status": ["ja": "ステータス", "en": "Status"],
+            "auto_update": ["ja": "自動更新", "en": "Auto Update"],
+            "stomach": ["ja": "おなか", "en": "Hunger"],
+            "mood": ["ja": "きげん", "en": "Mood"],
+            "days_together": ["ja": "一緒に {days}日目", "en": "Day {days} Together"],
+            "name_placeholder": ["ja": "名前をつけよう", "en": "Give a Name"],
+            "action": ["ja": "アクション", "en": "Actions"],
+            "feed": ["ja": "ごはん", "en": "Feed"],
+            "play": ["ja": "あそぶ", "en": "Play"],
+            "pet": ["ja": "なでる", "en": "Pet"],
+            "clean": ["ja": "そうじ", "en": "Clean"],
+            "talk": ["ja": "はなす", "en": "Talk"],
+            "fed_message": ["ja": "ごはんをあげました！", "en": "Fed the puppy!"],
+            "played_message": ["ja": "一緒に遊びました！", "en": "Played together!"],
+            "petted_message": ["ja": "撫でてあげました！", "en": "Petted the puppy!"],
+            "cleaned_message": ["ja": "お掃除しました！", "en": "Cleaned up!"],
+            "talking_message": ["ja": "話しかけています...", "en": "Talking..."],
+            "enter_your_name": ["ja": "あなたの名前を入力してください", "en": "Enter Your Name"],
+            "puppy_will_call_you": ["ja": "子犬があなたの名前を呼んでくれるようになります！", "en": "The puppy will call you by your name!"],
+            "enter_name": ["ja": "名前を入力", "en": "Enter name"],
+            "name_required": ["ja": "名前を入力してください", "en": "Please enter a name"],
+            "skip": ["ja": "スキップ", "en": "Skip"],
+            "save": ["ja": "保存", "en": "Save"],
+            "enter_puppy_name": ["ja": "子犬の名前を入力", "en": "Enter Puppy's Name"],
+            "current_name": ["ja": "現在の名前: ", "en": "Current name: "],
+            "enter_puppy_name_placeholder": ["ja": "名前を入力してください", "en": "Enter a name"],
+            "start_from_today": ["ja": "今日から一緒に暮らし始めます", "en": "Starting to live together from today"],
+            "cancel": ["ja": "キャンセル", "en": "Cancel"]
+        ]
+        
+        if let textDict = animalCareTexts[key], let localizedText = textDict[currentLanguage] {
+            return localizedText
+        }
+        
+        return key // キーが見つからない場合はキー自体を返す
     }
 } 

@@ -50,7 +50,7 @@ struct AnimalCareView: View {
                         
                         Spacer()
                         
-                        Text("どうぶつのおへや")
+                        Text(viewModel.getLocalizedAnimalCareText(key: "room_title"))
                             .font(.system(size: 24, weight: .bold, design: .rounded))
                             .foregroundColor(Color(hex: 0x4E342E))
                             .padding(.vertical, 8)
@@ -90,7 +90,7 @@ struct AnimalCareView: View {
                     VStack(spacing: 4) {
                         HStack {
                             // 名前ラベル
-                            Text(viewModel.puppyName == "まだ名前がありません" ? "名前をつけよう" : viewModel.puppyName)
+                            Text(viewModel.puppyName == "まだ名前がありません" ? viewModel.getLocalizedAnimalCareText(key: "name_placeholder") : viewModel.puppyName)
                                 .font(.system(size: 18, weight: .bold, design: .rounded))
                                 .foregroundColor(Color(hex: 0x5D4037))
                             
@@ -107,7 +107,7 @@ struct AnimalCareView: View {
                             Spacer()
                             
                             // 飼育日数
-                            Text("一緒に \(viewModel.puppyDaysWithYou)日目")
+                            Text(viewModel.getLocalizedAnimalCareText(key: "days_together").replacingOccurrences(of: "{days}", with: "\(viewModel.puppyDaysWithYou)"))
                                 .font(.system(size: 14, weight: .medium, design: .rounded))
                                 .foregroundColor(Color(hex: 0x8D6E63))
                                 .padding(.horizontal, 8)
@@ -134,7 +134,7 @@ struct AnimalCareView: View {
                     VStack(spacing: 8) {
                         // パネルヘッダー
                         HStack {
-                            Text("ステータス")
+                            Text(viewModel.getLocalizedAnimalCareText(key: "status"))
                                 .font(.system(size: 15, weight: .bold, design: .rounded))
                                 .foregroundColor(Color(hex: 0x5D4037))
                             Spacer()
@@ -142,7 +142,7 @@ struct AnimalCareView: View {
                             HStack(spacing: 4) {
                                 Image(systemName: "clock.fill")
                                     .font(.caption2)
-                                Text("自動更新")
+                                Text(viewModel.getLocalizedAnimalCareText(key: "auto_update"))
                                     .font(.caption2)
                             }
                             .foregroundColor(Color(hex: 0x9E9E9E))
@@ -166,7 +166,7 @@ struct AnimalCareView: View {
                                 .shadow(radius: 1)
                             
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("おなか")
+                                Text(viewModel.getLocalizedAnimalCareText(key: "stomach"))
                                     .font(.system(size: 12, weight: .medium, design: .rounded))
                                     .foregroundColor(Color(hex: 0x5D4037))
                                 
@@ -188,7 +188,7 @@ struct AnimalCareView: View {
                                 .shadow(radius: 1)
                             
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("きげん")
+                                Text(viewModel.getLocalizedAnimalCareText(key: "mood"))
                                     .font(.system(size: 12, weight: .medium, design: .rounded))
                                     .foregroundColor(Color(hex: 0x5D4037))
                                 
@@ -304,7 +304,7 @@ struct AnimalCareView: View {
                     VStack(spacing: 3) {
                         // パネルヘッダー
                         HStack {
-                            Text("アクション")
+                            Text(viewModel.getLocalizedAnimalCareText(key: "action"))
                                 .font(.system(size: 15, weight: .bold, design: .rounded))
                                 .foregroundColor(Color(hex: 0x5D4037))
                             Spacer()
@@ -321,46 +321,91 @@ struct AnimalCareView: View {
                         // アクションボタングリッド
                         HStack(spacing: 20) {
                             // 餌やりボタン
-                            ActionButton(
-                                action: { feedAction() },
-                                imageName: "icon_feed",
-                                color: Color(hex: 0xFF9800),
-                                isDisabled: viewModel.puppyHunger >= 90
-                            )
+                            VStack(spacing: 8) {
+                                ActionButton(
+                                    action: feedAction,
+                                    imageName: "icon_feed",
+                                    color: .orange,
+                                    isDisabled: viewModel.puppyHunger >= 90
+                                )
+                                
+                                // ボタンラベル
+                                if !viewModel.showEatingAnimation {
+                                    Text(viewModel.getLocalizedAnimalCareText(key: "feed"))
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundColor(Color(hex: 0x5D4037))
+                                }
+                            }
                             
                             // 遊ぶボタン
-                            ActionButton(
-                                action: { playAction() },
-                                imageName: "icon_play",
-                                color: Color(hex: 0x4CAF50),
-                                isDisabled: viewModel.puppyHappiness >= 90
-                            )
+                            VStack(spacing: 8) {
+                                ActionButton(
+                                    action: playAction,
+                                    imageName: "icon_play",
+                                    color: .orange,
+                                    isDisabled: viewModel.showPlayingAnimation
+                                )
+                                
+                                // ボタンラベル
+                                if !viewModel.showPlayingAnimation {
+                                    Text(viewModel.getLocalizedAnimalCareText(key: "play"))
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundColor(Color(hex: 0x5D4037))
+                                }
+                            }
                             
                             // 撫でるボタン
-                            ActionButton(
-                                action: { petAction() },
-                                imageName: "icon_pet",
-                                color: Color(hex: 0x9C27B0),
-                                isDisabled: false
-                            )
+                            VStack(spacing: 8) {
+                                ActionButton(
+                                    action: petAction,
+                                    imageName: "icon_pet",
+                                    color: .purple,
+                                    isDisabled: viewModel.showPettingAnimation
+                                )
+                                
+                                // ボタンラベル
+                                if !viewModel.showPettingAnimation {
+                                    Text(viewModel.getLocalizedAnimalCareText(key: "pet"))
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundColor(Color(hex: 0x5D4037))
+                                }
+                            }
                             
-                            // トイレボタン
-                            ActionButton(
-                                action: { cleanAction() },
-                                imageName: "icon_clean",
-                                color: Color(hex: 0x2196F3),
-                                isDisabled: viewModel.poopCount == 0
-                            )
+                            // 掃除ボタン
+                            VStack(spacing: 8) {
+                                ActionButton(
+                                    action: cleanAction,
+                                    imageName: "icon_clean",
+                                    color: .green,
+                                    isDisabled: viewModel.poopCount == 0 || viewModel.showCleaningAnimation
+                                )
+                                
+                                // ボタンラベル
+                                if !(viewModel.poopCount == 0 || viewModel.showCleaningAnimation) {
+                                    Text(viewModel.getLocalizedAnimalCareText(key: "clean"))
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundColor(Color(hex: 0x5D4037))
+                                }
+                            }
                             
-                            // 会話ボタン（他のボタンと同じスタイル）
-                            ActionButtonSF(
-                                action: { conversationAction() },
-                                systemName: "bubble.left.fill",
-                                color: Color(hex: 0x3F51B5),
-                                isDisabled: viewModel.showConversationBubble || viewModel.showInlineConversationChoices,
-                                iconSize: 16,
-                                circleSize: 40
-                            )
+                            // 会話ボタン
+                            VStack(spacing: 8) {
+                                ActionButtonSF(
+                                    action: conversationAction,
+                                    systemName: "bubble.left.fill",
+                                    color: .cyan,
+                                    isDisabled: viewModel.showConversationBubble || viewModel.showInlineConversationChoices,
+                                    iconSize: 16,
+                                    circleSize: 40
+                                )
+                                
+                                // ボタンラベル
+                                if !(viewModel.showConversationBubble || viewModel.showInlineConversationChoices) {
+                                    Text(viewModel.getLocalizedAnimalCareText(key: "talk"))
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundColor(Color(hex: 0x5D4037))
+                                }
+                            }
                         }
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)
@@ -456,7 +501,7 @@ struct AnimalCareView: View {
     private func feedAction() {
         if !viewModel.showEatingAnimation { // 既に食事中なら何もしない
             viewModel.feedPuppy()
-            statusMessage = "ごはんをあげました！"
+            statusMessage = viewModel.getLocalizedAnimalCareText(key: "fed_message")
             showStatusMessage = true
             
             // 操作時間を更新
@@ -468,7 +513,7 @@ struct AnimalCareView: View {
     private func playAction() {
         if !viewModel.showPlayingAnimation { // 既に遊んでいる途中なら何もしない
             viewModel.playWithPuppy()
-            statusMessage = "一緒に遊びました！"
+            statusMessage = viewModel.getLocalizedAnimalCareText(key: "played_message")
             showStatusMessage = true
             
             // 操作時間を更新
@@ -481,7 +526,7 @@ struct AnimalCareView: View {
         if !viewModel.showPettingAnimation { // 既に撫でている途中なら何もしない
             viewModel.puppyHappiness = min(viewModel.puppyHappiness + 5, 100)
             viewModel.showPettingAnimation = true
-            statusMessage = "撫でてあげました！"
+            statusMessage = viewModel.getLocalizedAnimalCareText(key: "petted_message")
             showStatusMessage = true
             
             // 操作時間を更新
@@ -494,7 +539,7 @@ struct AnimalCareView: View {
         if viewModel.poopCount > 0 && !viewModel.showCleaningAnimation { // うんちがあり、掃除中でなければ
             viewModel.cleanPoops()
             viewModel.showCleaningAnimation = true
-            statusMessage = "お掃除しました！"
+            statusMessage = viewModel.getLocalizedAnimalCareText(key: "cleaned_message")
             showStatusMessage = true
             
             // 操作時間を更新
@@ -507,7 +552,7 @@ struct AnimalCareView: View {
         if !viewModel.showConversationBubble && !viewModel.showInlineConversationChoices {
             // 通常タップは会話選択肢を表示
             showInlineConversationChoices()
-            statusMessage = "話しかけています..."
+            statusMessage = viewModel.getLocalizedAnimalCareText(key: "talking_message")
             showStatusMessage = true
         }
     }
@@ -616,20 +661,20 @@ struct PuppyNameInputView: View {
     var body: some View {
         VStack(spacing: 20) {
             // ヘッダー
-            Text("子犬の名前を入力")
+            Text(viewModel.getLocalizedAnimalCareText(key: "enter_puppy_name"))
                 .font(.system(size: 22, weight: .bold, design: .rounded))
                 .foregroundColor(Color(hex: 0x5D4037))
                 .padding(.top, 20)
             
             // 現在の名前
             if viewModel.puppyName != "まだ名前がありません" {
-                Text("現在の名前: \(viewModel.puppyName)")
+                Text(viewModel.getLocalizedAnimalCareText(key: "current_name") + viewModel.puppyName)
                     .font(.system(size: 16, design: .rounded))
                     .foregroundColor(Color(hex: 0x8D6E63))
             }
             
             // 入力フィールド
-            TextField("名前を入力してください", text: $newPuppyName)
+            TextField(viewModel.getLocalizedAnimalCareText(key: "enter_puppy_name_placeholder"), text: $newPuppyName)
                 .font(.system(size: 18))
                 .padding()
                 .background(Color.white)
@@ -648,14 +693,14 @@ struct PuppyNameInputView: View {
             
             // エラーメッセージ
             if showError {
-                Text("名前を入力してください")
+                Text(viewModel.getLocalizedAnimalCareText(key: "name_required"))
                     .font(.caption)
                     .foregroundColor(.red)
             }
             
             // 飼育開始日の選択（初めて名前をつける場合のみ）
             if viewModel.puppyName == "まだ名前がありません" {
-                Text("今日から一緒に暮らし始めます")
+                Text(viewModel.getLocalizedAnimalCareText(key: "start_from_today"))
                     .font(.system(size: 14, design: .rounded))
                     .foregroundColor(Color(hex: 0x8D6E63))
             }
@@ -666,7 +711,7 @@ struct PuppyNameInputView: View {
                 Button(action: {
                     isPresented = false
                 }) {
-                    Text("キャンセル")
+                    Text(viewModel.getLocalizedAnimalCareText(key: "cancel"))
                         .font(.system(size: 16, weight: .medium))
                         .padding(.vertical, 12)
                         .padding(.horizontal, 30)
@@ -693,7 +738,7 @@ struct PuppyNameInputView: View {
                     // ダイアログを閉じる
                     isPresented = false
                 }) {
-                    Text("保存")
+                    Text(viewModel.getLocalizedAnimalCareText(key: "save"))
                         .font(.system(size: 16, weight: .bold))
                         .padding(.vertical, 12)
                         .padding(.horizontal, 30)
@@ -759,7 +804,7 @@ struct OwnerNameInputView: View {
     var body: some View {
         VStack(spacing: 20) {
             // ヘッダー
-            Text("あなたの名前を入力してください")
+            Text(viewModel.getLocalizedAnimalCareText(key: "enter_your_name"))
                 .font(.system(size: 22, weight: .bold, design: .rounded))
                 .foregroundColor(Color(hex: 0x5D4037))
                 .padding(.top, 20)
@@ -772,14 +817,14 @@ struct OwnerNameInputView: View {
                 .frame(height: 120)
                 .padding(.vertical, 10)
             
-            Text("子犬があなたの名前を呼んでくれるようになります！")
+            Text(viewModel.getLocalizedAnimalCareText(key: "puppy_will_call_you"))
                 .font(.system(size: 16, design: .rounded))
                 .foregroundColor(Color(hex: 0x8D6E63))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
             
             // 入力フィールド
-            TextField("名前を入力", text: $newOwnerName)
+            TextField(viewModel.getLocalizedAnimalCareText(key: "enter_name"), text: $newOwnerName)
                 .font(.system(size: 18))
                 .padding()
                 .background(Color.white)
@@ -798,7 +843,7 @@ struct OwnerNameInputView: View {
             
             // エラーメッセージ
             if showError {
-                Text("名前を入力してください")
+                Text(viewModel.getLocalizedAnimalCareText(key: "name_required"))
                     .font(.caption)
                     .foregroundColor(.red)
             }
@@ -809,7 +854,7 @@ struct OwnerNameInputView: View {
                 Button(action: {
                     isPresented = false
                 }) {
-                    Text("スキップ")
+                    Text(viewModel.getLocalizedAnimalCareText(key: "skip"))
                         .font(.system(size: 16, weight: .medium, design: .rounded))
                         .foregroundColor(Color(hex: 0x9E9E9E))
                         .padding(.vertical, 12)
@@ -827,7 +872,7 @@ struct OwnerNameInputView: View {
                         isPresented = false
                     }
                 }) {
-                    Text("保存")
+                    Text(viewModel.getLocalizedAnimalCareText(key: "save"))
                         .font(.system(size: 16, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
                         .padding(.vertical, 12)
