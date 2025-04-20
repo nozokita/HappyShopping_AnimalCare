@@ -1454,8 +1454,8 @@ class GameViewModel: ObservableObject {
         let puppyResponses: [String]  // 複数の返答からランダムに選択
     }
 
-    // 会話選択肢リスト（公開）
-    var conversationChoices: [ConversationChoice] = [
+    // 会話選択肢リスト（日本語）
+    private var conversationChoicesJA: [ConversationChoice] = [
         ConversationChoice(
             userPrompt: "今日はどう？",
             puppyResponses: [
@@ -1497,67 +1497,75 @@ class GameViewModel: ObservableObject {
             ]
         )
     ]
-
-    // 現在の状態に合わせた会話を取得
-    func getPuppyConversation() -> String {
-        var category = "normal"
-        
-        // 機嫌やお腹の状態によって会話カテゴリを変更
-        if puppyHappiness < 30 || poopCount >= 3 {
-            category = "sad"
-        } else if puppyHunger < 30 {
-            category = "hungry"
-        } else if puppyHappiness > 80 {
-            category = "happy"
-        }
-        
-        // 該当カテゴリの会話をフィルタリング
-        let filteredConversations = puppyConversations.filter { $0[category] != nil }.compactMap { $0[category] }
-        
-        // ランダムに選択
-        guard let selectedConversation = filteredConversations.randomElement() else {
-            return "こんにちは！" // デフォルトの挨拶
-        }
-        
-        return selectedConversation
+    
+    // 会話選択肢リスト（英語）
+    private var conversationChoicesEN: [ConversationChoice] = [
+        ConversationChoice(
+            userPrompt: "How are you today?",
+            puppyResponses: [
+                "I'm feeling great! What shall we play today?",
+                "Hmm, a bit sleepy... but I'm happy to be with you!",
+                "I was hungry, but seeing you made me feel better!"
+            ]
+        ),
+        ConversationChoice(
+            userPrompt: "Want to go for a walk?",
+            puppyResponses: [
+                "Yay! I love walks! Let's go!",
+                "Yes! Where are you taking me?",
+                "The weather is so nice today! Perfect for a walk!"
+            ]
+        ),
+        ConversationChoice(
+            userPrompt: "What's your favorite food?",
+            puppyResponses: [
+                "I love meat! Especially chicken!",
+                "Dog food is nice, but I'd love a treat sometimes...",
+                "I love anything you give me!"
+            ]
+        ),
+        ConversationChoice(
+            userPrompt: "Let's sleep together",
+            puppyResponses: [
+                "Yay! I love sleeping with you in bed!",
+                "Yes, let's play a bit more first before sleeping",
+                "Woof! Being cozy with you makes me so happy~"
+            ]
+        ),
+        ConversationChoice(
+            userPrompt: "Good dog!",
+            puppyResponses: [
+                "Hehe, I'm happy to be praised!",
+                "I want more praise!",
+                "Thank you for always spending time with me!"
+            ]
+        )
+    ]
+    
+    // 現在の言語に合わせた会話選択肢を取得するプロパティ
+    var conversationChoices: [ConversationChoice] {
+        return currentLanguage == "ja" ? conversationChoicesJA : conversationChoicesEN
     }
-
-    // 子犬とのコミュニケーションを記録する
-    @Published var lastConversationTime: Date = Date()
+    
+    // 現在表示されている会話選択肢
+    @Published var conversationChoicesArray: [ConversationChoice] = []
+    @Published var showInlineConversationChoices: Bool = false
     @Published var showConversationBubble: Bool = false
     @Published var currentConversation: String = ""
-    @Published var showInlineConversationChoices: Bool = false
-    @Published var conversationChoicesArray: [ConversationChoice] = []
+    @Published var lastConversationTime: Date = Date()
     
-    /// 子犬の会話を更新する
-    func updatePuppyConversation() {
-        // 5%の確率で名前入りの挨拶をする
-        if Int.random(in: 1...100) <= 5 && !ownerName.isEmpty {
-            currentConversation = getPersonalizedGreeting()
-        } else {
-            currentConversation = getPuppyConversation()
-        }
-        
-        showConversationBubble = true
-        lastConversationTime = Date()
-        
-        // 操作時間を更新
-        updateLastInteraction()
-    }
-    
-    /// 会話バブルを非表示にする
-    func hideConversationBubble() {
-        showConversationBubble = false
-    }
-    
-    /// ユーザーの選択した会話に応答する
+    // ユーザーの選択した会話に応答する
     func respondToUserChoice(choice: ConversationChoice) {
         guard let response = choice.puppyResponses.randomElement() else { return }
         
         // 名前が設定されている場合は20%の確率で名前を呼ぶ
         if !ownerName.isEmpty && Int.random(in: 1...100) <= 20 {
             // 応答の先頭に名前を追加
-            currentConversation = "\(ownerName)ちゃん、\(response)"
+            if currentLanguage == "ja" {
+                currentConversation = "\(ownerName)ちゃん、\(response)"
+            } else {
+                currentConversation = "\(ownerName), \(response)"
+            }
         } else {
             currentConversation = response
         }

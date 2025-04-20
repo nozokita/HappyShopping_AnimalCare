@@ -321,91 +321,46 @@ struct AnimalCareView: View {
                         // アクションボタングリッド
                         HStack(spacing: 20) {
                             // 餌やりボタン
-                            VStack(spacing: 8) {
-                                ActionButton(
-                                    action: feedAction,
-                                    imageName: "icon_feed",
-                                    color: .orange,
-                                    isDisabled: viewModel.puppyHunger >= 90
-                                )
-                                
-                                // ボタンラベル
-                                if !viewModel.showEatingAnimation {
-                                    Text(viewModel.getLocalizedAnimalCareText(key: "feed"))
-                                        .font(.system(size: 12, weight: .medium))
-                                        .foregroundColor(Color(hex: 0x5D4037))
-                                }
-                            }
+                            ActionButton(
+                                action: feedAction,
+                                imageName: "icon_feed",
+                                color: .orange,
+                                isDisabled: viewModel.puppyHunger >= 90
+                            )
                             
                             // 遊ぶボタン
-                            VStack(spacing: 8) {
-                                ActionButton(
-                                    action: playAction,
-                                    imageName: "icon_play",
-                                    color: .orange,
-                                    isDisabled: viewModel.showPlayingAnimation
-                                )
-                                
-                                // ボタンラベル
-                                if !viewModel.showPlayingAnimation {
-                                    Text(viewModel.getLocalizedAnimalCareText(key: "play"))
-                                        .font(.system(size: 12, weight: .medium))
-                                        .foregroundColor(Color(hex: 0x5D4037))
-                                }
-                            }
+                            ActionButton(
+                                action: playAction,
+                                imageName: "icon_play",
+                                color: .orange,
+                                isDisabled: viewModel.showPlayingAnimation
+                            )
                             
                             // 撫でるボタン
-                            VStack(spacing: 8) {
-                                ActionButton(
-                                    action: petAction,
-                                    imageName: "icon_pet",
-                                    color: .purple,
-                                    isDisabled: viewModel.showPettingAnimation
-                                )
-                                
-                                // ボタンラベル
-                                if !viewModel.showPettingAnimation {
-                                    Text(viewModel.getLocalizedAnimalCareText(key: "pet"))
-                                        .font(.system(size: 12, weight: .medium))
-                                        .foregroundColor(Color(hex: 0x5D4037))
-                                }
-                            }
+                            ActionButton(
+                                action: petAction,
+                                imageName: "icon_pet",
+                                color: .purple,
+                                isDisabled: viewModel.showPettingAnimation
+                            )
                             
                             // 掃除ボタン
-                            VStack(spacing: 8) {
-                                ActionButton(
-                                    action: cleanAction,
-                                    imageName: "icon_clean",
-                                    color: .green,
-                                    isDisabled: viewModel.poopCount == 0 || viewModel.showCleaningAnimation
-                                )
-                                
-                                // ボタンラベル
-                                if !(viewModel.poopCount == 0 || viewModel.showCleaningAnimation) {
-                                    Text(viewModel.getLocalizedAnimalCareText(key: "clean"))
-                                        .font(.system(size: 12, weight: .medium))
-                                        .foregroundColor(Color(hex: 0x5D4037))
-                                }
-                            }
+                            ActionButton(
+                                action: cleanAction,
+                                imageName: "icon_clean",
+                                color: .green,
+                                isDisabled: viewModel.poopCount == 0 || viewModel.showCleaningAnimation
+                            )
                             
                             // 会話ボタン
-                            VStack(spacing: 8) {
-                                ActionButtonSF(
-                                    action: conversationAction,
-                                    systemName: "bubble.left.fill",
-                                    color: .cyan,
-                                    isDisabled: viewModel.showConversationBubble || viewModel.showInlineConversationChoices,
-                                    iconSize: 16,
-                                    circleSize: 40
-                                )
-                                
-                                // ボタンラベル
-                                if !(viewModel.showConversationBubble || viewModel.showInlineConversationChoices) {
-                                    Text(viewModel.getLocalizedAnimalCareText(key: "talk"))
-                                        .font(.system(size: 12, weight: .medium))
-                                        .foregroundColor(Color(hex: 0x5D4037))
-                                }
-                            }
+                            ActionButtonSF(
+                                action: conversationAction,
+                                systemName: "bubble.left.fill",
+                                color: .cyan,
+                                isDisabled: viewModel.showConversationBubble || viewModel.showInlineConversationChoices,
+                                iconSize: 16,
+                                circleSize: 40
+                            )
                         }
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)
