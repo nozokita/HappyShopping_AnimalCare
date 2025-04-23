@@ -434,10 +434,15 @@ struct PuppyAnimationView: View {
     
     // ランダムに移動
     private func moveAround() {
-        // 画面端に達したら方向転換
-        if position.x < 50 {
+        // 子犬の画像の半分の幅
+        let puppyHalfWidth: CGFloat = 60
+        // 画面端からの最小マージン
+        let screenMargin: CGFloat = 80
+        
+        // 画面端に達したら方向転換（子犬の幅と安全マージンを考慮）
+        if position.x < screenMargin {
             walkingDirection = 1
-        } else if position.x > size.width - 50 {
+        } else if position.x > size.width - screenMargin {
             walkingDirection = -1
         }
         // ランダムで方向転換（確率を下げて、より長く同じ方向に移動するように）
@@ -447,7 +452,8 @@ struct PuppyAnimationView: View {
         
         // 現在の方向に応じて移動（移動速度を遅く）
         let newX = position.x + (walkingDirection * 5)
-        position.x = max(50, min(newX, size.width - 50))
+        // 子犬が確実に画面内に収まるように制限（子犬の幅を考慮）
+        position.x = max(screenMargin, min(newX, size.width - screenMargin))
         
         // Y座標もわずかに変動させるが、地面から浮かないよう制限（変動を小さく）
         if Int.random(in: 0...8) == 0 {
