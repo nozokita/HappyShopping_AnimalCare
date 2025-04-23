@@ -453,8 +453,6 @@ struct PuppyAnimationView: View {
     
     // ランダムに移動
     private func moveAround() {
-        // 子犬の画像の半分の幅
-        let puppyHalfWidth: CGFloat = 60
         // 画面端からの最小マージン
         let screenMargin: CGFloat = 80
         

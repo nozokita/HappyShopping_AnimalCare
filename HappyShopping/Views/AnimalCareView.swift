@@ -254,7 +254,7 @@ struct AnimalCareView: View {
                                 }
                             }
                             .frame(maxWidth: .infinity, alignment: .center)
-                            .offset(y: 10) // 子犬の上ではなく少し下に配置
+                            .offset(y: 60) // 子犬の上ではなく、より下に配置（10から60に変更）
                             .transition(.opacity)
                             .zIndex(2)
                         }

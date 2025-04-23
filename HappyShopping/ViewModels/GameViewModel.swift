@@ -1390,18 +1390,18 @@ class GameViewModel: ObservableObject {
 
     // 子犬の朝のあいさつリスト（日本語）
     private var puppyMorningGreetingsJA: [String] = [
-        "{name}ちゃん、おはよう！今日も元気だよ！",
-        "おはよう、{name}ちゃん！今日も一緒に遊ぼうね！",
-        "{name}ちゃん、おはよう！今日はどこに行く？",
-        "おはよう！{name}ちゃんに会えてうれしいな！"
+        "{name}ちゃん、おはよう！きょうも げんきだよ！",
+        "おはよう、{name}ちゃん！きょうも いっしょに あそぼうね！",
+        "{name}ちゃん、おはよう！きょうは どこに いく？",
+        "おはよう！{name}ちゃんに あえて うれしいな！"
     ]
     
     // 子犬の夜のあいさつリスト（日本語）
     private var puppyEveningGreetingsJA: [String] = [
-        "{name}ちゃん、こんばんは！今日も楽しかったね！",
-        "こんばんは、{name}ちゃん！もう寝る時間かな？",
-        "{name}ちゃん、今日も一緒にいてくれてありがとう！",
-        "こんばんは！{name}ちゃんといると安心するよ〜"
+        "{name}ちゃん、こんばんは！きょうも たのしかったね！",
+        "こんばんは、{name}ちゃん！もう ねる じかんかな？",
+        "{name}ちゃん、きょうも いっしょに いてくれて ありがとう！",
+        "こんばんは！{name}ちゃんと いると あんしんするよ～"
     ]
     
     // 子犬の朝のあいさつリスト（英語）
@@ -1454,50 +1454,95 @@ class GameViewModel: ObservableObject {
         let puppyResponses: [String]  // 複数の返答からランダムに選択
     }
 
-    // 会話選択肢リスト（日本語）
-    private var conversationChoicesJA: [ConversationChoice] = [
+    // 会話選択肢リスト（日本語・朝）
+    private var conversationChoicesJAMorning: [ConversationChoice] = [
         ConversationChoice(
-            userPrompt: "今日はどう？",
+            userPrompt: "おはよう！",
             puppyResponses: [
-                "とっても元気だよ！今日は何して遊ぶ？",
-                "うーん、ちょっと眠いかも…でも一緒にいれて嬉しいよ！",
-                "お腹がすいてたけど、会えて元気になったよ！"
+                "おはよう！とっても げんきだよ！きょうは なにして あそぶ？",
+                "おはよう！ちょっと ねむいけど、いっしょに あさごはん たべたいな！",
+                "おはよう！きょうも いっしょに あそぼうね！"
             ]
         ),
         ConversationChoice(
-            userPrompt: "お散歩に行く？",
+            userPrompt: "おさんぽ いく？",
             puppyResponses: [
-                "わーい！お散歩大好き！早く行こう！",
-                "うん！どこに連れて行ってくれるの？",
-                "今日はいいお天気だね！お散歩日和だよ！"
+                "わーい！おさんぽ だいすき！はやく いこう！",
+                "うん！どこに つれていって くれるの？",
+                "きょうは いい おてんき だね！おさんぽびより だよ！"
             ]
         ),
         ConversationChoice(
-            userPrompt: "好きな食べ物は？",
+            userPrompt: "すきな たべものは？",
             puppyResponses: [
-                "お肉が大好き！特にチキンがおいしいよ！",
-                "ドッグフードも美味しいけど、たまにおやつがほしいな…",
-                "君がくれるものはなんでも大好き！"
+                "おにく だいすき！とくに ちきんが おいしいよ！",
+                "どっぐふーども おいしいけど、たまに おやつが ほしいな…",
+                "きみが くれるものは なんでも だいすき！"
             ]
         ),
         ConversationChoice(
-            userPrompt: "一緒に寝よう",
+            userPrompt: "いい こだね",
             puppyResponses: [
-                "やった！ベッドで一緒に寝るの大好き！",
-                "うん、もうちょっと遊んでから眠ろうね",
-                "わーい！ぬくぬくして幸せだよ〜"
+                "えへへ、ほめられて うれしいな！",
+                "もっと ほめて ほしいな！",
+                "いつも かまって くれて ありがとう！"
             ]
         ),
         ConversationChoice(
-            userPrompt: "いい子だね",
+            userPrompt: "きょうの よていは？",
             puppyResponses: [
-                "えへへ、褒められて嬉しいな！",
-                "もっと褒めて欲しいな！",
-                "いつもかまってくれてありがとう！"
+                "きょうは いっぱい あそびたいな！",
+                "おひるねも したいし、おもちゃで あそびたいな！",
+                "きみと いっしょなら なにしても たのしいよ！"
             ]
         )
     ]
     
+    // 会話選択肢リスト（日本語・夜）
+    private var conversationChoicesJAEvening: [ConversationChoice] = [
+        ConversationChoice(
+            userPrompt: "こんばんは！",
+            puppyResponses: [
+                "こんばんは！きょうも たのしかったね！",
+                "こんばんは～！そろそろ ねむくなってきたよ…",
+                "こんばんは！あしたも いっしょに あそぼうね！"
+            ]
+        ),
+        ConversationChoice(
+            userPrompt: "いっしょに ねよう",
+            puppyResponses: [
+                "やった！べっどで いっしょに ねるの だいすき！",
+                "うん、もうちょっと あそんでから ねむろうね",
+                "わーい！ぬくぬくして しあわせだよ～"
+            ]
+        ),
+        ConversationChoice(
+            userPrompt: "おなかすいた？",
+            puppyResponses: [
+                "うん！ばんごはん たべたいな～",
+                "ちょっと おなかすいたよ！なにか たべようね",
+                "おやつも ほしいな～"
+            ]
+        ),
+        ConversationChoice(
+            userPrompt: "いい こだね",
+            puppyResponses: [
+                "えへへ、ほめられて うれしいな！",
+                "もっと ほめて ほしいな！",
+                "いつも かまって くれて ありがとう！"
+            ]
+        ),
+        ConversationChoice(
+            userPrompt: "きょうは たのしかった？",
+            puppyResponses: [
+                "うん！すっごく たのしかったよ！",
+                "きみと いっしょだから しあわせだよ～",
+                "いちばん たのしい いちにちだったよ！あしたも たのしみ！"
+            ]
+        )
+    ]
+    
+    // 子犬の朝のあいさつリスト（日本語・ひらがな）
     // 会話選択肢リスト（英語）
     private var conversationChoicesEN: [ConversationChoice] = [
         ConversationChoice(
@@ -1544,7 +1589,11 @@ class GameViewModel: ObservableObject {
     
     // 現在の言語に合わせた会話選択肢を取得するプロパティ
     var conversationChoices: [ConversationChoice] {
-        return currentLanguage == "ja" ? conversationChoicesJA : conversationChoicesEN
+        if currentLanguage == "ja" {
+            return isDaytime ? conversationChoicesJAMorning : conversationChoicesJAEvening
+        } else {
+            return conversationChoicesEN
+        }
     }
     
     // 現在表示されている会話選択肢
