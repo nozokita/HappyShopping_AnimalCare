@@ -70,6 +70,8 @@ struct ConversationBubbleView: View {
                 .foregroundColor(Color(hex: 0x4E342E))
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
+                .frame(maxWidth: 200)
+                .multilineTextAlignment(.center)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color.white)
@@ -244,9 +246,16 @@ struct PuppyAnimationView: View {
     private var conversationBubbleView: some View {
         Group {
             if viewModel.showConversationBubble {
+                // 会話バブルの推定サイズ
+                let bubbleWidth: CGFloat = 200
+                let bubbleHalfWidth: CGFloat = bubbleWidth / 2
+                
+                // 会話バブルが画面内に収まるようにX座標を調整
+                let safeX = min(max(position.x, bubbleHalfWidth + 20), size.width - bubbleHalfWidth - 20)
+                
                 ConversationBubbleView(
                     text: viewModel.currentConversation,
-                    position: CGPoint(x: position.x, y: position.y - 70),
+                    position: CGPoint(x: safeX, y: position.y - 70),
                     opacity: conversationOpacity
                 )
                 .onAppear {
