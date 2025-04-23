@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct AnimalCareView: View {
     @ObservedObject var viewModel: GameViewModel
@@ -253,7 +254,7 @@ struct AnimalCareView: View {
                                 }
                             }
                             .frame(maxWidth: .infinity, alignment: .center)
-                            .offset(y: -40) // 子犬の上に配置
+                            .offset(y: 10) // 子犬の上ではなく少し下に配置
                             .transition(.opacity)
                             .zIndex(2)
                         }
@@ -531,8 +532,9 @@ struct AnimalCareView: View {
             viewModel.showConversationBubble = true
             viewModel.showInlineConversationChoices = false
             
-            // ステータスメッセージも表示
-            statusMessage = "「\(choice.userPrompt)」と話しかけました"
+            // ステータスメッセージも表示（多言語対応）
+            let messageTemplate = viewModel.getLocalizedAnimalCareText(key: "talked_message")
+            statusMessage = messageTemplate.replacingOccurrences(of: "{prompt}", with: choice.userPrompt)
             showStatusMessage = true
         }
         
@@ -640,8 +642,11 @@ struct PuppyNameInputView: View {
                 )
                 .padding(.horizontal, 20)
                 .focused($isTextFieldFocused)
+                .onTapGesture {
+                    isTextFieldFocused = true
+                }
                 .onAppear {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                         isTextFieldFocused = true
                     }
                 }
@@ -711,6 +716,11 @@ struct PuppyNameInputView: View {
             // 現在の名前を初期値としてセット（まだ名前がない場合は空文字）
             if viewModel.puppyName != "まだ名前がありません" {
                 newPuppyName = viewModel.puppyName
+            }
+            
+            // キーボードを表示
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                UIApplication.shared.sendAction(#selector(UIResponder.becomeFirstResponder), to: nil, from: nil, for: nil)
             }
         }
     }
@@ -790,8 +800,11 @@ struct OwnerNameInputView: View {
                 )
                 .padding(.horizontal, 20)
                 .focused($isTextFieldFocused)
+                .onTapGesture {
+                    isTextFieldFocused = true
+                }
                 .onAppear {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                         isTextFieldFocused = true
                     }
                 }
@@ -847,5 +860,11 @@ struct OwnerNameInputView: View {
         )
         .shadow(color: Color.black.opacity(0.3), radius: 20, x: 0, y: 10)
         .padding(.horizontal, 20)
+        .onAppear {
+            // キーボードを表示
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                UIApplication.shared.sendAction(#selector(UIResponder.becomeFirstResponder), to: nil, from: nil, for: nil)
+            }
+        }
     }
 } 

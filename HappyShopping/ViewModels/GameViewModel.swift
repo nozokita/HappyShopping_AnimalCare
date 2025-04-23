@@ -1558,8 +1558,8 @@ class GameViewModel: ObservableObject {
     func respondToUserChoice(choice: ConversationChoice) {
         guard let response = choice.puppyResponses.randomElement() else { return }
         
-        // 名前が設定されている場合は20%の確率で名前を呼ぶ
-        if !ownerName.isEmpty && Int.random(in: 1...100) <= 20 {
+        // 名前が設定されている場合は50%の確率で名前を呼ぶ（20%から変更）
+        if !ownerName.isEmpty && Int.random(in: 1...100) <= 50 {
             // 応答の先頭に名前を追加
             if currentLanguage == "ja" {
                 currentConversation = "\(ownerName)ちゃん、\(response)"
@@ -1601,6 +1601,7 @@ class GameViewModel: ObservableObject {
             "petted_message": ["ja": "撫でてあげました！", "en": "Petted the puppy!"],
             "cleaned_message": ["ja": "お掃除しました！", "en": "Cleaned up!"],
             "talking_message": ["ja": "話しかけています...", "en": "Talking..."],
+            "talked_message": ["ja": "「{prompt}」と話しかけました", "en": "You said: \"{prompt}\""],
             "enter_your_name": ["ja": "あなたの名前を入力してください", "en": "Enter Your Name"],
             "puppy_will_call_you": ["ja": "子犬があなたの名前を呼んでくれるようになります！", "en": "The puppy will call you by your name!"],
             "enter_name": ["ja": "名前を入力", "en": "Enter name"],

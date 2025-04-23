@@ -145,6 +145,16 @@ struct PuppyAnimationView: View {
                 startAnimation()
                 // 初期うんち生成
                 updatePoopDisplay()
+                
+                // 画面表示時に自動的に挨拶を表示
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    if !viewModel.showConversationBubble {
+                        let greeting = viewModel.getPersonalizedGreeting()
+                        viewModel.currentConversation = greeting
+                        viewModel.showConversationBubble = true
+                        viewModel.lastConversationTime = Date()
+                    }
+                }
             }
             .onDisappear {
                 timerCancellable?.cancel()
