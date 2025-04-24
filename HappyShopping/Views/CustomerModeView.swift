@@ -90,7 +90,8 @@ struct CustomerModeView: View {
     // ★ カート表示ビュー (ボタンとSpacerを削除)
     private var customerCartView: some View {
         VStack(alignment: .leading) {
-            Text("カート") // ローカライズ対応推奨
+            // 「カート」の見出しもローカライズ
+            Text(viewModel.currentLanguage == "ja" ? "カート" : "Cart")
                 .font(.headline)
                 .padding(.bottom, 2)
 
@@ -104,9 +105,11 @@ struct CustomerModeView: View {
                         ForEach(viewModel.customerCart) { item in
                             HStack {
                                 if let product = viewModel.getProduct(byId: item.productKey) {
-                                    Text(product.nameJA) // 日本語名
+                                    // 言語設定に応じて表示名を切り替え
+                                    Text(viewModel.currentLanguage == "ja" ? product.nameJA : product.nameEN)
                                     Spacer()
-                                    Text("\(item.quantity) 個") // 個数
+                                    // 「個」もローカライズ
+                                    Text("\(item.quantity) \(viewModel.currentLanguage == "ja" ? "個" : (item.quantity > 1 ? "items" : "item"))")
                                     Text("¥\(product.price * item.quantity)") // 合計金額
                                 } else {
                                     Text("商品不明") // エラーケース
@@ -129,7 +132,8 @@ struct CustomerModeView: View {
                 // 合計金額
                 HStack {
                     Spacer()
-                    Text("カート合計:")
+                    // テキストもローカライズ
+                    Text(viewModel.currentLanguage == "ja" ? "カート合計:" : "Cart Total:")
                         .font(.headline)
                     Text("¥\(calculateCartTotal())")
                         .font(.title2.weight(.semibold))
