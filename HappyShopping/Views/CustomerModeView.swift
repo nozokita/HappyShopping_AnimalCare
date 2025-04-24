@@ -96,7 +96,8 @@ struct CustomerModeView: View {
                 .padding(.bottom, 2)
 
             if viewModel.customerCart.isEmpty {
-                Text("カートは空です") // ローカライズ対応推奨
+                // カートが空の場合のテキストもローカライズ
+                Text(viewModel.currentLanguage == "ja" ? "カートは空です" : "Cart is empty")
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, minHeight: 100) // 高さを確保
             } else {
