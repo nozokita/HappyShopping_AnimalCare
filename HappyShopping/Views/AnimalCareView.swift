@@ -9,12 +9,21 @@ struct AnimalCareView: View {
     @State private var showNameInputDialog: Bool = false
     @State private var showOwnerNameInputDialog: Bool = false
     @State private var animationTimer: Timer? = nil
+    @State private var showFeedChoices: Bool = false
+    @State private var feedChoicesArray: [FeedOption] = []
     
     // 画面サイズ取得用
     @State private var containerSize: CGSize = .zero
     
     // 背景切り替え用のデバッグボタンを表示するかどうか（開発時のみtrue）
     private let showDebugToggle = false
+    
+    // 餌選択肢のデータモデル
+    private struct FeedOption: Identifiable {
+        let id = UUID()
+        let label: String
+        let assetName: String
+    }
     
     var body: some View {
         GeometryReader { geometry in
@@ -254,7 +263,27 @@ struct AnimalCareView: View {
                                 }
                             }
                             .frame(maxWidth: .infinity, alignment: .center)
-                            .offset(y: 60) // 子犬の上ではなく、より下に配置（10から60に変更）
+                            .offset(y: 360) // さらに下に配置
+                            .transition(.opacity)
+                            .zIndex(2)
+                        }
+                        
+                        // 餌やり選択肢（子犬の近くに表示）
+                        if showFeedChoices {
+                            HStack(spacing: 20) {
+                                ForEach(feedChoicesArray) { option in
+                                    Button(action: { selectFeed(option) }) {
+                                        Image(option.assetName)
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 60, height: 60)
+                                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                                    }
+                                    .transition(.scale(scale: 0.8).combined(with: .opacity))
+                                }
+                            }
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .offset(y: 360) // さらに下に配置
                             .transition(.opacity)
                             .zIndex(2)
                         }
@@ -326,7 +355,7 @@ struct AnimalCareView: View {
                                 action: feedAction,
                                 imageName: "icon_feed",
                                 color: .orange,
-                                isDisabled: viewModel.puppyHunger >= 90
+                                isDisabled: viewModel.puppyHunger >= 90 || showFeedChoices
                             )
                             
                             // 遊ぶボタン
@@ -456,10 +485,13 @@ struct AnimalCareView: View {
     // 餌やりアクション
     private func feedAction() {
         if !viewModel.showEatingAnimation { // 既に食事中なら何もしない
-            viewModel.feedPuppy()
-            statusMessage = viewModel.getLocalizedAnimalCareText(key: "fed_message")
-            showStatusMessage = true
-            
+            feedChoicesArray = [
+                FeedOption(label: "へんなドックフード", assetName: "weird_dog_food"),
+                FeedOption(label: "ドックフード", assetName: "dog_food"),
+                FeedOption(label: "おやつ", assetName: "treat"),
+                FeedOption(label: "おいしそうなおにく", assetName: "tasty_meat")
+            ]
+            showFeedChoices = true
             // 操作時間を更新
             viewModel.updateLastInteraction()
         }
@@ -538,6 +570,23 @@ struct AnimalCareView: View {
             showStatusMessage = true
         }
         
+        // 操作時間を更新
+        viewModel.updateLastInteraction()
+    }
+
+    // 餌を選んだときの処理
+    private func selectFeed(_ option: FeedOption) {
+        // 選択肢を閉じる
+        showFeedChoices = false
+        // 選択した餌のタイプをViewModelにセット
+        if let type = GameViewModel.FoodType(rawValue: option.assetName) {
+            viewModel.selectedFoodType = type
+        }
+        // 実際に餌をあげる（アニメーションをトリガー）
+        viewModel.feedPuppy()
+        // ステータスメッセージ表示
+        statusMessage = "\(option.label)をあげたよ！"
+        showStatusMessage = true
         // 操作時間を更新
         viewModel.updateLastInteraction()
     }

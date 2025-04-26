@@ -121,6 +121,9 @@ struct PuppyAnimationView: View {
     // カスタム画像名を保持するプロパティ
     @State private var _customImageName: String? = nil
     
+    // 先頭で食べ物画像名を保持
+    @State private var foodImageName: String = ""
+    
     var body: some View {
         mainContentView
             .frame(width: size.width, height: size.height)
@@ -208,7 +211,11 @@ struct PuppyAnimationView: View {
             
             // 食べ物画像（条件付きで表示）
             if showFood {
-                FoodView(position: foodPosition)
+                Image(foodImageName)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 50, height: 50)
+                    .position(foodPosition)
             }
             
             // 子犬画像
@@ -302,7 +309,8 @@ struct PuppyAnimationView: View {
                     // 待機状態の場合は puppy_idle_1 を使用
                     return "puppy_idle_1"
                 case .eating:
-                    return "puppy_eating_1"
+                    // カスタム画像があればそちらを優先、それ以外はデフォルト
+                    return _customImageName ?? "puppy_eating_1"
                 case .playing:
                     // カスタムアニメーションで制御
                     return _customImageName ?? "puppy_playing_1"
@@ -502,22 +510,31 @@ struct PuppyAnimationView: View {
     
     // 食事アニメーション
     private func showEatingAnimation() {
-        print("🍖 食事アニメーション開始: 食べ物表示")
-        // 食べ物を表示
-        showFood = true
-        
-        // 犬の前に食べ物を配置
-        foodPosition = CGPoint(x: position.x, y: position.y + 20)
-        
-        // 食事状態に変更
+        // 選択した食べ物に応じた子犬のアニメーション画像をセット
+        let puppyImageName: String
+        switch viewModel.selectedFoodType {
+        case .weird_dog_food:
+            puppyImageName = "puppy_eating_weird_dog_food"
+        case .dog_food:
+            puppyImageName = "puppy_eating_1"
+        case .treat:
+            puppyImageName = "puppy_eating_treat"
+        case .tasty_meat:
+            puppyImageName = "puppy_eating_tasty_meat"
+        }
+        // カスタム画像として保持
+        _customImageName = puppyImageName
+        // 子犬の状態を食事中に
         currentState = .eating
         idleCounter = 0
-        
+        // 食事アニメーション用の小物（フードアイコン）は不要なら非表示
+        showFood = false
+
         // 食事アニメーションが終わった後も食べ物を表示しておく
         DispatchQueue.main.asyncAfter(deadline: .now() + 6.0) {
-            print("🍖 食事アニメーション終了: 食べ物非表示")
+            // 食事状態が終了したらカスタム画像をクリア
             if self.currentState != .eating {
-                self.showFood = false
+                self._customImageName = nil
             }
         }
     }

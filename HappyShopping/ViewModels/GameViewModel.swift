@@ -1670,4 +1670,14 @@ class GameViewModel: ObservableObject {
         
         return key // キーが見つからない場合はキー自体を返す
     }
+
+    // MARK: - Food Types for feeding
+    enum FoodType: String {
+        case weird_dog_food
+        case dog_food
+        case treat
+        case tasty_meat
+    }
+
+    @Published var selectedFoodType: FoodType = .dog_food
 } 
