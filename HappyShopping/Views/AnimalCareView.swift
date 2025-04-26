@@ -263,7 +263,7 @@ struct AnimalCareView: View {
                                 }
                             }
                             .frame(maxWidth: .infinity, alignment: .center)
-                            .offset(y: 360) // さらに下に配置
+                            .offset(y: 60) // 会話選択肢の標準的な位置
                             .transition(.opacity)
                             .zIndex(2)
                         }
@@ -283,7 +283,7 @@ struct AnimalCareView: View {
                                 }
                             }
                             .frame(maxWidth: .infinity, alignment: .center)
-                            .offset(y: 360) // さらに下に配置
+                            .offset(y: 200) // 餌選択肢を上に移動
                             .transition(.opacity)
                             .zIndex(2)
                         }
