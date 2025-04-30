@@ -1680,4 +1680,21 @@ class GameViewModel: ObservableObject {
     }
 
     @Published var selectedFoodType: FoodType = .dog_food
+
+    // MARK: - Conversation Timer
+    private var conversationTimer: Timer?
+
+    /// 会話吹き出しを表示し、タイマーを開始する
+    private func showAndStartConversationTimer() {
+        // 既存のタイマーを停止
+        conversationTimer?.invalidate()
+        
+        // 吹き出しを表示
+        showConversationBubble = true
+        
+        // 新しいタイマーを開始 (7秒後に吹き出しを閉じる)
+        conversationTimer = Timer.scheduledTimer(withTimeInterval: 7.0, repeats: false) { [weak self] _ in
+            self?.hideConversationBubble()
+        }
+    }
 } 
