@@ -1136,7 +1136,11 @@ class GameViewModel: ObservableObject {
         
         // 1時間ごとにお腹と機嫌が減少する（新しい難易度: お腹7、機嫌15）
         let hungerDecrease = min(hoursElapsed * 7, puppyHunger)
-        let happinessDecrease = min(hoursElapsed * 15, puppyHappiness)
+        // 機嫌の減少量を計算（うんちの数で変動）
+        let baseHappinessDecreaseRate: Double = 15
+        let poopMultiplier: Double = (poopCount >= 3) ? 1.33 : 1.0 // うんち3つ以上で減少速度を約1.33倍 (15 -> 20)
+        let effectiveHappinessDecreaseRate = baseHappinessDecreaseRate * poopMultiplier
+        let happinessDecrease = min(hoursElapsed * effectiveHappinessDecreaseRate, puppyHappiness)
         
         puppyHunger = max(puppyHunger - hungerDecrease, 0)
         puppyHappiness = max(puppyHappiness - happinessDecrease, 0)
@@ -1696,5 +1700,12 @@ class GameViewModel: ObservableObject {
         conversationTimer = Timer.scheduledTimer(withTimeInterval: 7.0, repeats: false) { [weak self] _ in
             self?.hideConversationBubble()
         }
+    }
+
+    /// 会話吹き出しを非表示にする
+    private func hideConversationBubble() {
+        showConversationBubble = false
+        conversationTimer?.invalidate()
+        conversationTimer = nil
     }
 } 
