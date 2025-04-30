@@ -1669,7 +1669,16 @@ class GameViewModel: ObservableObject {
             "current_name": ["ja": "現在の名前: ", "en": "Current name: "],
             "enter_puppy_name_placeholder": ["ja": "名前を入力してください", "en": "Enter a name"],
             "start_from_today": ["ja": "今日から一緒に暮らし始めます", "en": "Starting to live together from today"],
-            "cancel": ["ja": "キャンセル", "en": "Cancel"]
+            "cancel": ["ja": "キャンセル", "en": "Cancel"],
+
+            // --- ミニゲーム用テキスト --- 
+            "findToy_title": ["ja": "おもちゃ を さがそう！", "en": "Find the Toy!"],
+            "findToy_instructions": ["ja": "この おもちゃ を 見つけてね！", "en": "Find this toy!"],
+            "findToy_placeholder": ["ja": "（ゲーム準備中...）", "en": "(Loading game...)"],
+            "findToy_correct": ["ja": "やったね！せいかい！", "en": "Yay! Correct!"],
+            "findToy_wrong": ["ja": "ちがうよ、もういちど！", "en": "Oops, try again!"],
+            "findToy_closeButton": ["ja": "おわり", "en": "Close"]
+            // --- ここまで --- 
         ]
         
         if let textDict = animalCareTexts[key], let localizedText = textDict[currentLanguage] {
