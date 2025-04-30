@@ -2,6 +2,15 @@ import SwiftUI
 import AVFoundation // AVFoundationをインポート
 import Combine // TimerのためにCombineをインポート（なくても動くことが多いが念のため）
 
+// MARK: - Data Structures
+
+// おもちゃのデータ構造
+struct Toy: Identifiable, Equatable {
+    let id = UUID()
+    let key: String // ローカライズキー用
+    let imageName: String // アセット名
+}
+
 // ゲームの状態を表すEnum
 enum GameState {
     case initialSelection // 追加: 最初のモード選択画面
@@ -75,6 +84,15 @@ private let highScoresKey = "highScores" // ハイスコア保存用キー (追�
 class GameViewModel: ObservableObject {
     // MARK: - Speech Synthesis (★ 追加)
     private let speechSynthesizer = AVSpeechSynthesizer()
+
+    // MARK: - Mini-Game Properties
+    let availableToys: [Toy] = [
+        Toy(key: "toy_ball", imageName: "toy_ball"),
+        Toy(key: "toy_bone", imageName: "toy_bone"),
+        Toy(key: "toy_duck", imageName: "toy_duck"),
+        Toy(key: "toy_plush", imageName: "toy_plush"),
+        // 必要ならおもちゃを追加
+    ]
 
     // MARK: - Game Mode
     @Published var currentGameMode: GameMode = .shopping
@@ -1677,7 +1695,13 @@ class GameViewModel: ObservableObject {
             "findToy_placeholder": ["ja": "（ゲーム準備中...）", "en": "(Loading game...)"],
             "findToy_correct": ["ja": "やったね！せいかい！", "en": "Yay! Correct!"],
             "findToy_wrong": ["ja": "ちがうよ、もういちど！", "en": "Oops, try again!"],
-            "findToy_closeButton": ["ja": "おわり", "en": "Close"]
+            "findToy_closeButton": ["ja": "おわり", "en": "Close"],
+
+            // --- おもちゃの名前 --- 
+            "toy_ball_name": ["ja": "ボール", "en": "Ball"],
+            "toy_bone_name": ["ja": "ほね", "en": "Bone"],
+            "toy_duck_name": ["ja": "アヒルちゃん", "en": "Duck"],
+            "toy_plush_name": ["ja": "ぬいぐるみ", "en": "Plush Toy"],
             // --- ここまで --- 
         ]
         
