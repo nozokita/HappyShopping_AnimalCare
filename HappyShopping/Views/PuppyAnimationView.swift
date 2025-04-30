@@ -308,6 +308,11 @@ struct PuppyAnimationView: View {
     // 現在の状態に応じた画像名を取得
     private var currentImageName: String {
         get {
+            // 睡眠時間中は強制的に睡眠画像
+            if viewModel.isSleepingTime {
+                return "puppy_sleeping_1"
+            }
+            
             switch currentState {
                 case .idle:
                     // 待機状態の場合は puppy_idle_1 を使用

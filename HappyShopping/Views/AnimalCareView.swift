@@ -355,7 +355,7 @@ struct AnimalCareView: View {
                                 action: feedAction,
                                 imageName: "icon_feed",
                                 color: .orange,
-                                isDisabled: viewModel.puppyHunger >= 90 || showFeedChoices
+                                isDisabled: viewModel.isSleepingTime || viewModel.puppyHunger >= 90 || showFeedChoices
                             )
                             
                             // 遊ぶボタン
@@ -363,7 +363,7 @@ struct AnimalCareView: View {
                                 action: playAction,
                                 imageName: "icon_play",
                                 color: .orange,
-                                isDisabled: viewModel.showPlayingAnimation
+                                isDisabled: viewModel.isSleepingTime || viewModel.showPlayingAnimation
                             )
                             
                             // 撫でるボタン
@@ -371,7 +371,7 @@ struct AnimalCareView: View {
                                 action: petAction,
                                 imageName: "icon_pet",
                                 color: .purple,
-                                isDisabled: viewModel.showPettingAnimation
+                                isDisabled: viewModel.isSleepingTime || viewModel.showPettingAnimation
                             )
                             
                             // 掃除ボタン
@@ -379,7 +379,7 @@ struct AnimalCareView: View {
                                 action: cleanAction,
                                 imageName: "icon_clean",
                                 color: .green,
-                                isDisabled: viewModel.poopCount == 0 || viewModel.showCleaningAnimation
+                                isDisabled: viewModel.isSleepingTime || viewModel.poopCount == 0 || viewModel.showCleaningAnimation
                             )
                             
                             // 会話ボタン
@@ -387,7 +387,7 @@ struct AnimalCareView: View {
                                 action: conversationAction,
                                 systemName: "bubble.left.fill",
                                 color: .cyan,
-                                isDisabled: viewModel.showConversationBubble || viewModel.showInlineConversationChoices,
+                                isDisabled: viewModel.isSleepingTime || viewModel.showConversationBubble || viewModel.showInlineConversationChoices,
                                 iconSize: 16,
                                 circleSize: 40
                             )

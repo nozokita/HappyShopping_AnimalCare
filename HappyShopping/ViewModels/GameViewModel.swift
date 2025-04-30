@@ -1169,6 +1169,7 @@ class GameViewModel: ObservableObject {
 
     // 時間帯関連の状態管理
     @Published var isDaytime: Bool = true
+    @Published var isSleepingTime: Bool = false // 追加: 子犬が寝る時間かどうかのフラグ
     private var timeOfDayTimer: Timer?
     
     /// 現在の時間帯を更新する
@@ -1178,6 +1179,9 @@ class GameViewModel: ObservableObject {
         
         // 6時〜18時を昼間、それ以外を夜とする
         isDaytime = (6...18).contains(hour)
+
+        // 夜10時(22時)から朝6時(5時)までを睡眠時間とする
+        isSleepingTime = hour >= 22 || hour < 6
     }
     
     /// 時間帯更新タイマーを開始する
