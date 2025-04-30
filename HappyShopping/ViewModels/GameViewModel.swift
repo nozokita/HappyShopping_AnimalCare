@@ -1134,9 +1134,9 @@ class GameViewModel: ObservableObject {
         let elapsedSeconds = Date().timeIntervalSince(lastAnimalCareTime)
         let hoursElapsed = elapsedSeconds / 3600
         
-        // 1時間ごとにお腹と機嫌が減少する（減少率は調整可能）
-        let hungerDecrease = min(hoursElapsed * 5, puppyHunger)
-        let happinessDecrease = min(hoursElapsed * 10, puppyHappiness)
+        // 1時間ごとにお腹と機嫌が減少する（新しい難易度: お腹7、機嫌15）
+        let hungerDecrease = min(hoursElapsed * 7, puppyHunger)
+        let happinessDecrease = min(hoursElapsed * 15, puppyHappiness)
         
         puppyHunger = max(puppyHunger - hungerDecrease, 0)
         puppyHappiness = max(puppyHappiness - happinessDecrease, 0)
@@ -1161,7 +1161,7 @@ class GameViewModel: ObservableObject {
     @Published var isPuppyMissing: Bool = false
     @Published var lastInteractionDate: Date = Date()
     @Published var ownerName: String = "" // ユーザー（飼い主）の名前
-    private let missingTimeThreshold: TimeInterval = 60 * 60 * 24 * 3 // 3日間
+    private let missingTimeThreshold: TimeInterval = 60 * 60 * 24 * 2 // 2日間に短縮
 
     // 時間帯関連の状態管理
     @Published var isDaytime: Bool = true

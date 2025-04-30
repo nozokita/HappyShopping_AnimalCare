@@ -250,13 +250,17 @@ struct PuppyAnimationView: View {
     
     // 子犬ビュー
     private var puppyView: some View {
-        Image(currentImageName)
+        // ステータスが50%以下ならグレースケールで弱った表現
+        let lowStatus = viewModel.puppyHunger <= 50 || viewModel.puppyHappiness <= 50
+        return Image(currentImageName)
             .resizable()
             .scaledToFit()
             .frame(width: 120)
             .position(position)
             .scaleEffect(shouldBounce ? 1.1 : 1.0)
+            .grayscale(lowStatus ? 0.8 : 0)
             .animation(.spring(response: 0.3, dampingFraction: 0.5), value: shouldBounce)
+            .animation(.easeInOut(duration: 0.5), value: lowStatus)
     }
     
     // 会話バブルビュー
