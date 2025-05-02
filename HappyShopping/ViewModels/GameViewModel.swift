@@ -1704,11 +1704,12 @@ class GameViewModel: ObservableObject {
             "toy_plush_name": ["ja": "ぬいぐるみ", "en": "Plush Toy"],
             // --- ここまで --- 
             // --- かくれんぼ用テキスト ---
-            "hideAndSeek_title": ["ja": "かくれんぼしよう！", "en": "Let's Play Hide and Seek!"],
-            "hideAndSeek_instructions": ["ja": "ワンちゃんを さがしてね！", "en": "Find the puppy!"],
+            "hideAndSeek_title": ["ja": "犬はどこだ？", "en": "Where's the puppy?"],
+            "hideAndSeek_instructions": ["ja": "箱をタップして犬を見つけよう！", "en": "Tap a box to find the puppy!"],
             "hideAndSeek_correct": ["ja": "みつけた！", "en": "You found it!"],
             "hideAndSeek_wrong": ["ja": "ここじゃないよ！", "en": "Not here!"],
             "hideAndSeek_closeButton": ["ja": "おわり", "en": "Close"],
+            "hideAndSeek_retry": ["ja": "もう一度", "en": "Play Again"],
         ]
         
         if let textDict = animalCareTexts[key], let localizedText = textDict[currentLanguage] {

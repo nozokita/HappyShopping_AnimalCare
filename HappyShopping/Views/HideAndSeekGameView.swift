@@ -9,6 +9,8 @@ struct HideAndSeekGameView: View {
     @State private var isGameOver: Bool = false
     @State private var messageKey: String = "hideAndSeek_instructions"
     @State private var feedbackCorrect: Bool = false
+    @State private var revealedStates: [Bool] = Array(repeating: false, count: 6)
+    @State private var rotationDegrees: [Double] = Array(repeating: 0, count: 6)
 
     let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 3)
 
@@ -26,43 +28,82 @@ struct HideAndSeekGameView: View {
                     .padding(.horizontal)
                     .animation(.easeInOut, value: messageKey)
                 LazyVGrid(columns: columns, spacing: 20) {
-                    ForEach(0..<9) { index in
+                    ForEach(0..<6) { index in
                         Button {
-                            if !isGameOver {
+                            if !isGameOver && !revealedStates[index] {
+                                withAnimation(.easeInOut(duration: 0.6)) {
+                                    rotationDegrees[index] += 180
+                                    revealedStates[index] = true
+                                }
                                 cellTapped(index)
                             }
                         } label: {
-                            if isGameOver && index == targetIndex {
-                                Image("puppy_idle_1")
+                            ZStack {
+                                // 箱のアイコン（閉じた状態）
+                                Image("box_closed")
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 70, height: 70)
-                            } else {
-                                Image("puppy_missing")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 70, height: 70)
-                                    .opacity(0.6)
+                                    .opacity(revealedStates[index] ? 0 : 1)
+                                // 開封後の箱
+                                if revealedStates[index] {
+                                    Image("box_open")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 70, height: 70)
+                                }
+                                // 開封後の内容
+                                if revealedStates[index] {
+                                    if index == targetIndex {
+                                        Image("puppy_idle_1")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 70, height: 70)
+                                    } else {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 50, height: 50)
+                                            .foregroundColor(.red)
+                                    }
+                                }
                             }
+                            .rotation3DEffect(
+                                .degrees(rotationDegrees[index]),
+                                axis: (x: 0, y: 1, z: 0)
+                            )
+                            .animation(.spring(response: 0.4, dampingFraction: 0.6), value: rotationDegrees[index])
                         }
                         .buttonStyle(PlainButtonStyle())
-                        .disabled(isGameOver)
+                        .disabled(isGameOver || revealedStates[index])
                     }
                 }
                 .padding(.horizontal, 30)
                 Spacer()
                 if isGameOver {
-                    Button(viewModel.getLocalizedAnimalCareText(key: "hideAndSeek_closeButton")) {
-                        presentationMode.wrappedValue.dismiss()
+                    HStack(spacing: 20) {
+                        Button(viewModel.getLocalizedAnimalCareText(key: "hideAndSeek_retry")) {
+                            setupGame()
+                        }
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 30)
+                        .background(Color.green)
+                        .cornerRadius(25)
+                        .shadow(radius: 3)
+                        
+                        Button(viewModel.getLocalizedAnimalCareText(key: "hideAndSeek_closeButton")) {
+                            presentationMode.wrappedValue.dismiss()
+                        }
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 30)
+                        .background(Color.blue)
+                        .cornerRadius(25)
+                        .shadow(radius: 3)
                     }
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
-                    .padding(.vertical, 12)
-                    .padding(.horizontal, 40)
-                    .background(Color.blue)
-                    .cornerRadius(25)
-                    .shadow(radius: 3)
-                    .transition(.scale.combined(with: .opacity))
                 }
                 Spacer(minLength: 30)
             }
@@ -72,7 +113,9 @@ struct HideAndSeekGameView: View {
     }
 
     private func setupGame() {
-        targetIndex = Int.random(in: 0..<9)
+        targetIndex = Int.random(in: 0..<6)
+        revealedStates = Array(repeating: false, count: 6)
+        rotationDegrees = Array(repeating: 0, count: 6)
         isGameOver = false
         feedbackCorrect = false
         messageKey = "hideAndSeek_instructions"
