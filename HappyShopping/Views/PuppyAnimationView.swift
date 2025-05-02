@@ -385,7 +385,11 @@ struct PuppyAnimationView: View {
         position = CGPoint(x: CGFloat.random(in: 50..<size.width-50), y: size.height - 40)
         
         // 初期状態を設定
-        currentState = determineState()
+        if viewModel.isSleepingTime {
+            currentState = .sleeping
+        } else {
+            currentState = determineState()
+        }
         
         // アニメーションタイマーを開始（0.3秒間隔）
         timer = Timer.publish(every: 0.3, on: .main, in: .common)
@@ -399,6 +403,12 @@ struct PuppyAnimationView: View {
     
     // アニメーション更新
     private func updateAnimation() {
+        // 睡眠時間中は移動しないで睡眠状態を維持
+        if viewModel.isSleepingTime {
+            currentState = .sleeping
+            return
+        }
+        
         // 状態に応じたアニメーション
         switch currentState {
             case .walking:
