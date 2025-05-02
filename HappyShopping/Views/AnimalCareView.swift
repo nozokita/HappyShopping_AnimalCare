@@ -453,6 +453,9 @@ struct AnimalCareView: View {
         .sheet(isPresented: $showOwnerNameInputDialog) {
             OwnerNameInputView(viewModel: viewModel, isPresented: $showOwnerNameInputDialog)
         }
+        .sheet(isPresented: $showMiniGame) {
+            HideAndSeekGameView(viewModel: viewModel)
+        }
     }
     
     // 最終ケア時刻のフォーマット
@@ -499,14 +502,14 @@ struct AnimalCareView: View {
     
     // 遊びアクション
     private func playAction() {
-        if !viewModel.showPlayingAnimation { // 既に遊んでいる途中なら何もしない
-            viewModel.playWithPuppy()
-            statusMessage = viewModel.getLocalizedAnimalCareText(key: "played_message")
-            showStatusMessage = true
-            
-            // 操作時間を更新
-            viewModel.updateLastInteraction()
-        }
+        // 既に遊んでいる途中、または睡眠時間なら何もしない
+        guard !viewModel.showPlayingAnimation && !viewModel.isSleepingTime else { return }
+        
+        // ミニゲーム画面を表示するフラグを立てる
+        showMiniGame = true
+        
+        // 操作時間を更新
+        viewModel.updateLastInteraction()
     }
     
     // 撫でるアクション
