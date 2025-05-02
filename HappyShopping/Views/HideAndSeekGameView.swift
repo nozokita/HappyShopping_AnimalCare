@@ -40,7 +40,7 @@ struct HideAndSeekGameView: View {
                         } label: {
                             ZStack {
                                 // 箱のアイコン（閉じた状態）
-                                Image("box_closed")
+                                Image("box_close")
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 70, height: 70)
