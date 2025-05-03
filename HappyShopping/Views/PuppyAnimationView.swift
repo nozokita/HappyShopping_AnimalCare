@@ -399,6 +399,11 @@ struct PuppyAnimationView: View {
     
     // アニメーション更新
     private func updateAnimation() {
+        // 睡眠時間中は移動や状態変更を行わず、寝状態を維持する
+        if viewModel.isSleepingTime {
+            currentState = .sleeping
+            return
+        }
         // 状態に応じたアニメーション
         switch currentState {
             case .walking:
