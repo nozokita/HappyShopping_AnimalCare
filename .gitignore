@@ -20,7 +20,3 @@ Icon?
 Packages/
 Package.pins
 Package.resolved
-
-# 一時バックアップファイル
-tempbkup/ HappyShopping/Sounds/
-HappyShopping/Assets.xcassets/**/*.png
