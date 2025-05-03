@@ -1,5 +1,6 @@
 import SwiftUI
 import AVFoundation
+import UIKit
 
 struct HideAndSeekGameView: View {
     @Environment(\.presentationMode) var presentationMode
@@ -39,12 +40,18 @@ struct HideAndSeekGameView: View {
                             }
                         } label: {
                             ZStack {
-                                // 箱のアイコン（閉じた状態）
-                                Image("box_close")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 70, height: 70)
-                                    .opacity(revealedStates[index] ? 0 : 1)
+                                // 箱のアイコン（閉じた状態）。アセットがなければシステムアイコンを使う
+                                Group {
+                                    if UIImage(named: "box_close") != nil {
+                                        Image("box_close")
+                                    } else {
+                                        Image(systemName: "shippingbox.fill")
+                                    }
+                                }
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 70, height: 70)
+                                .opacity(revealedStates[index] ? 0 : 1)
                                 // 開封後の箱
                                 if revealedStates[index] {
                                     Image("box_open")
