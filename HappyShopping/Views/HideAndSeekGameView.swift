@@ -78,6 +78,7 @@ struct HideAndSeekGameView: View {
                         .font(.title)
                         .padding(.horizontal, 32)
                         .padding(.vertical, 16)
+                        .frame(minWidth: 180)
 
                         Button(viewModel.getLocalizedAnimalCareText(key: "hideAndSeek_closeButton")) {
                             presentationMode.wrappedValue.dismiss()
